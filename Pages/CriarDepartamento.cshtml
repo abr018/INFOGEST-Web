@@ -1,0 +1,165 @@
+﻿@page "/CriarDepartamento"
+@model INFOGEST_Web.Pages.CriarDepartamentoModel
+@{
+    ViewData["Title"] = "Registar Novo Departamento";
+    // Usamos Layout = null pois este ficheiro já contém a estrutura <html> e <body>
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>InfoGest - Registar Novo Departamento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/Dashboard.css">
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Registar Novo Departamento</span>
+            </div>
+
+            <div class="dash-right">
+                <a href="/Dashboard" class="btn-top ghost">Voltar ao painel</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="align-content: center">
+
+            <section class="company-card">
+
+                <header class="company-card-header">
+                    <h2>Registar Novo Departamento</h2>
+                    <p>Insira os dados do Departamento.</p>
+                </header>
+
+                <div id="status-message" class="hidden company-status"></div>
+
+                <form id="departamento-form" class="company-form">
+
+                    <input type="hidden" id="id_filial" />
+
+                    <div class="company-field full-width">
+                        <label for="nome">Nome do Departamento *</label>
+                        <input type="text" id="nome" required maxlength="100" value="Administração">
+                    </div>
+
+                    <div class="company-field"></div>
+
+                    <div class="company-actions" style="justify-content: center; grid-column: 1 / -1;">
+                        <button type="submit" id="submit-button" class="btn-main company-btn">
+                            <span id="button-text">Continuar</span>
+                            <span id="loading-spinner" class="spinner hidden"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <footer class="company-footer">
+                    <p>© 2025 - INFOGEST</p>
+                </footer>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusDiv = document.getElementById('status-message');
+            const form = document.getElementById('departamento-form');
+            const filialIdInput = document.getElementById('id_filial');
+            const submitButton = document.getElementById('submit-button');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const buttonText = document.getElementById('button-text');
+            const filialLoadingStatus = document.getElementById('filial-loading-status');
+
+            let isRedirecting = false;
+
+            // --- 0. Ler o ID da Filial da URL ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const idFilialParam = urlParams.get('id_filial');
+
+            if (!idFilialParam) {
+                filialLoadingStatus.textContent = 'Erro CRÍTICO: ID da Filial não encontrado na URL. Reinicie o processo.';
+                filialLoadingStatus.style.color = '#f87171'; // Cor de erro
+                submitButton.disabled = true;
+                return;
+            }
+
+            filialIdInput.value = idFilialParam;
+
+            // --- 1. Lógica de Submissão do Formulário (POST para /api/Departamentos) ---
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                submitButton.disabled = true;
+                buttonText.textContent = 'A Registar...';
+                loadingSpinner.classList.remove('hidden');
+                statusDiv.classList.add('hidden');
+
+                const data = {
+                    nome: document.getElementById('nome').value,
+                    id_filial: parseInt(filialIdInput.value)
+                };
+
+                try {
+                    const response = await fetch('/api/Departamentos/Publico', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+
+                        // SUCESSO: (Usando classes do Dashboard.css)
+                        statusDiv.className = 'company-status success';
+                        statusDiv.textContent = `Departamento criado. A redirecionar para Criar Conta...`;
+                        statusDiv.classList.remove('hidden');
+
+                        isRedirecting = true;
+                        window.location.href = `/CriarContaEmpresa?id_Departamento=${result.id_Departamento}`;
+                        return;
+
+                    } else {
+                        const errorResult = await response.json().catch(() => ({ title: `Erro ${response.status}: Resposta não-JSON.` }));
+                        let errorMessage = errorResult.title || 'Erro desconhecido.';
+
+                        if (errorResult.errors) {
+                            const validationError = Object.values(errorResult.errors).flat().join('; ');
+                            errorMessage = `Erro de Validação: ${validationError}`;
+                        } else if (response.status >= 500) {
+                            errorMessage = `Erro no Servidor (${response.status}).`;
+                        }
+
+                        // ERRO: (Usando classes do Dashboard.css)
+                        statusDiv.className = 'company-status error';
+                        statusDiv.textContent = errorMessage;
+                    }
+
+                } catch (error) {
+                    // ERRO DE REDE: (Usando classes do Dashboard.css)
+                    statusDiv.className = 'company-status error';
+                    statusDiv.textContent = 'Erro de rede: Não foi possível ligar ao servidor API.';
+                } finally {
+                    if (!isRedirecting) {
+                        submitButton.disabled = false;
+                        buttonText.textContent = 'Registar Departamento';
+                        loadingSpinner.classList.add('hidden');
+                        statusDiv.classList.remove('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,412 @@
+﻿@page "/CheckinOut"
+@{
+    ViewData["Title"] = "Registo de Ponto";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - Registo de Ponto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        /* =========================================
+                   CSS ESPECÍFICO (Complementa Dashboard.css)
+                   ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827, #020617);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .dash-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .dash-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .dash-logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3b82f6;
+            letter-spacing: 0.14em;
+            text-decoration: none;
+        }
+
+        .dash-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+            display: block;
+        }
+
+        .btn-top.ghost {
+            background: transparent;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .dash-main {
+            max-width: 800px;
+            margin: 0 auto 32px auto;
+            width: 100%;
+        }
+
+        .dash-card {
+            background-color: #020617;
+            border-radius: 14px;
+            padding: 24px;
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Menu Links */
+        a.nav-link {
+            color: #9ca3af;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+            a.nav-link:hover, a.nav-link.active {
+                color: #3b82f6 !important;
+            }
+
+        /* Relógio e Botões */
+        #clock {
+            font-family: 'Courier New', monospace;
+            color: #e5e7eb;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            font-size: 4rem;
+        }
+
+        .btn-ponto {
+            border: none;
+            border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+            .btn-ponto:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            }
+
+            .btn-ponto:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        .btn-entrada {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+        }
+
+        .btn-saida {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+        }
+
+        /* Lista de Registos */
+        .list-group-item-dark-custom {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid #1f2937;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            border-radius: 8px !important;
+        }
+
+            .list-group-item-dark-custom span.time {
+                color: #e5e7eb;
+                font-family: 'Courier New', monospace;
+                font-weight: 700;
+            }
+
+        .section-title {
+            color: #6b7280;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 8px;
+        }
+
+        /* Botão Voltar */
+        .btn-voltar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 16px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+            .btn-voltar:hover {
+                background-color: rgba(59, 130, 246, 0.15);
+                color: #3b82f6;
+                border-color: rgba(59, 130, 246, 0.3);
+            }
+
+        /* Mensagem de Estado */
+        #statusMsg {
+            display: none;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <a style="text-decoration: none;">
+                    <div class="dash-logo">INFOGEST</div>
+                    <span class="dash-subtitle">Portal do Colaborador</span>
+                </a>
+            </div>
+            <div class="flex-grow-1 d-flex justify-content-center">
+                <ul class="navbar-nav d-flex flex-row align-items-center list-unstyled mb-0">
+                    <li class="nav-item mx-3 mx-md-4"><a href="/Ferias" class="nav-link">Férias</a></li>
+                    <li class="nav-item mx-3 mx-md-4"><a href="/CheckinOut" class="nav-link active">Check-in/Out</a></li>
+                    <li class="nav-item mx-3 mx-md-4"><a href="/Faltas" class="nav-link">Faltas</a></li>
+                </ul>
+            </div>
+            <div class="dash-right">
+                <a href="/Perfil" class="btn-top ghost"><i class="bi bi-person-circle" style="margin-right: 6px;"></i> Perfil</a>
+            </div>
+        </header>
+
+        <main class="dash-main">
+            <div class="dash-card">
+
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <a href="#" id="btnVoltar" class="btn-voltar" title="Voltar ao Início" style="display: none;">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+
+                    <i class="bi bi-clock-history" style="color: #3b82f6; font-size: 24px;"></i>
+                    <h2 style="color: #e5e7eb; font-size: 18px; font-weight: 600; margin:0;">Registo de Ponto</h2>
+                </div>
+
+                <div id="statusMsg"></div>
+
+                <div class="text-center py-4">
+                    <div id="clock" class="fw-bold mb-2">00:00:00</div>
+                    <p class="text-muted" id="current-date">A carregar...</p>
+                </div>
+
+                <div class="row g-3 mb-5">
+                    <div class="col-6">
+                        <button id="btnEntrada" onclick="registarPonto('Entrada')" class="btn btn-ponto btn-entrada w-100 py-4 fs-4">
+                            <i class="bi bi-box-arrow-in-right d-block mb-2 fs-2"></i> ENTRADA
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button id="btnSaida" onclick="registarPonto('Saida')" class="btn btn-ponto btn-saida w-100 py-4 fs-4">
+                            <i class="bi bi-box-arrow-left d-block mb-2 fs-2"></i> SAÍDA
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5 class="section-title">Registos de Hoje</h5>
+                    <ul id="listaRegistos" class="list-group list-group-flush">
+                        <li class="text-center text-muted py-3">A carregar registos...</li>
+                    </ul>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- 1. RELÓGIO ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-PT');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').innerText = now.toLocaleDateString('pt-PT', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- 2. CARREGAR DADOS INICIAIS ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Carrega registos de ponto
+            loadRegistos();
+
+            // Lógica para o BOTÃO VOLTAR dinâmico
+            try {
+                const response = await fetch('/api/Funcionarios/meu-perfil');
+                if (response.ok) {
+                    const perfil = await response.json();
+
+                    const btn = document.getElementById('btnVoltar');
+                    if (btn) {
+                        btn.href = perfil.urlVoltar || "/HomeTrabalhadores";
+                        btn.style.display = 'flex'; // Mostra botão
+                    }
+                } else {
+                    // Fallback se falhar
+                    const btn = document.getElementById('btnVoltar');
+                    btn.href = "/HomeTrabalhadores";
+                    btn.style.display = 'flex';
+                }
+            } catch (e) {
+                console.error("Erro ao definir link de voltar", e);
+                const btn = document.getElementById('btnVoltar');
+                btn.href = "/HomeTrabalhadores";
+                btn.style.display = 'flex';
+            }
+        });
+
+        async function loadRegistos() {
+            try {
+                const response = await fetch('/api/Presencas/hoje');
+
+                if (response.status === 401) {
+                    window.location.href = "/Login";
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Inverter para mostrar o mais recente primeiro
+                const listaInvertida = data.registos ? data.registos.reverse() : [];
+
+                renderRegistos(listaInvertida);
+                atualizarBotoes(data.estaDentro);
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // --- 3. REGISTAR PONTO (POST) ---
+        async function registarPonto(tipo) {
+            const btn = (tipo === 'Entrada') ? document.getElementById('btnEntrada') : document.getElementById('btnSaida');
+            btn.disabled = true; // Evita duplo clique
+
+            try {
+                const response = await fetch('/api/Presencas/registar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Tipo: tipo })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage(result.message, 'success');
+                    loadRegistos(); // Recarrega a lista e estado dos botões
+                } else {
+                    showMessage(result.message || "Erro ao registar.", 'danger');
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                showMessage("Erro de conexão.", 'danger');
+                btn.disabled = false;
+            }
+        }
+
+        // --- 4. ATUALIZAR INTERFACE ---
+        function renderRegistos(registos) {
+            const lista = document.getElementById('listaRegistos');
+            lista.innerHTML = '';
+
+            if (!registos || registos.length === 0) {
+                lista.innerHTML = '<li class="text-center text-muted py-3">Sem registos hoje.</li>';
+                return;
+            }
+
+            registos.forEach(reg => {
+                // Se houver saída, mostra a linha de SAÍDA primeiro
+                if (reg.horaSaida) {
+                    const liSaida = `
+                    <li class="list-group-item list-group-item-dark-custom d-flex justify-content-between align-items-center">
+                        <div><i class="bi bi-arrow-right-circle-fill text-danger me-2"></i> <span>Saída</span></div>
+                        <span class="time">${reg.horaSaida}</span>
+                    </li>`;
+                    lista.insertAdjacentHTML('beforeend', liSaida);
+                }
+
+                // Depois mostra a linha de ENTRADA correspondente
+                const liEntrada = `
+                    <li class="list-group-item list-group-item-dark-custom d-flex justify-content-between align-items-center">
+                        <div><i class="bi bi-check-circle-fill text-success me-2"></i> <span>Entrada</span></div>
+                        <span class="time">${reg.horaEntrada}</span>
+                    </li>`;
+                lista.insertAdjacentHTML('beforeend', liEntrada);
+            });
+        }
+
+        function atualizarBotoes(estaDentro) {
+            const btnEntrada = document.getElementById('btnEntrada');
+            const btnSaida = document.getElementById('btnSaida');
+
+            if (estaDentro) {
+                // Se está dentro, só pode Sair
+                btnEntrada.disabled = true;
+                btnEntrada.style.opacity = "0.5";
+                btnSaida.disabled = false;
+                btnSaida.style.opacity = "1";
+            } else {
+                // Se está fora, só pode Entrar
+                btnEntrada.disabled = false;
+                btnEntrada.style.opacity = "1";
+                btnSaida.disabled = true;
+                btnSaida.style.opacity = "0.5";
+            }
+        }
+
+        function showMessage(msg, type) {
+            const div = document.getElementById('statusMsg');
+            div.innerText = msg;
+            div.style.display = 'block';
+            div.style.backgroundColor = (type === 'success') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            div.style.color = (type === 'success') ? '#34d399' : '#f87171';
+            div.style.border = (type === 'success') ? '1px solid #059669' : '1px solid #dc2626';
+            setTimeout(() => { div.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

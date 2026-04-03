@@ -1,0 +1,324 @@
+﻿@page "/CriarContaEmpresa"
+@model INFOGEST_Web.Pages.CriarContaEmpresaModel
+@{
+    ViewData["Title"] = "Criar Conta de Administrador";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>InfoGest - Registar Administrador</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        .company-field select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+            background-color: #020617;
+            color: #e5e7eb;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 10px;
+        }
+
+            .company-field select:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6);
+                background-color: #020617;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Registar Conta de Administrador</span>
+            </div>
+
+            <div class="dash-right">
+                <a href="/Dashboard" class="btn-top ghost">Voltar ao painel</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+
+            <section class="company-card">
+
+                <header class="company-card-header">
+                    <h2>Registar Administrador</h2>
+                    <p>Insira os dados para criar a sua Conta de Administrador.</p>
+                </header>
+
+                <div id="status-message" class="hidden company-status"></div>
+
+                <form id="funcionario-form" class="company-form">
+
+                    <input type="hidden" id="id_departamento">
+
+                    <div class="company-field full-width">
+                        <label for="nome">Nome Completo *</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+
+                    <div class="company-field">
+                        <label for="genero">Género</label>
+                        <select id="genero" name="genero">
+                            <option value="M">Masculino</option>
+                            <option value="F">Feminino</option>
+                        </select>
+                    </div>
+
+                    <div class="company-field">
+                        <label for="data_nascimento">Data de Nascimento</label>
+                        <input type="date" id="data_nascimento" name="data_nascimento">
+                    </div>
+
+                    <div class="company-field">
+                        <label for="nif">NIF *</label>
+                        <input type="text" id="nif" name="nif" required pattern="\d{9}" maxlength="9" placeholder="9 dígitos">
+                    </div>
+
+                    <div class="company-field">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="exemplo@gmail.com">
+                    </div>
+
+                    <div class="company-field">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="Contacto telefónico">
+                    </div>
+
+                    <div class="company-field full-width">
+                        <label for="morada">Morada</label>
+                        <input type="text" id="morada" name="morada">
+                    </div>
+
+                    <div class="company-field">
+                        <label for="username">Username *</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+
+                    <div class="company-field">
+                        <label for="senha_hash">Password *</label>
+                        <input type="password" id="senha_hash" name="password" required>
+                    </div>
+
+                    <div class="company-field">
+                    </div>
+
+                    <div class="company-actions">
+                        <button type="submit" id="submit-button" class="btn-main company-btn">
+                            <span id="button-text">Registar Conta</span>
+                            <span id="loading-spinner" class="spinner hidden"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <footer class="company-footer">
+                    <p>© 2025 - INFOGEST</p>
+                </footer>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        const CARGO_ADMINISTRADOR_ID = 4; // Confirme se este ID está correto na sua BD
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusDiv = document.getElementById('status-message');
+            const form = document.getElementById('funcionario-form');
+            const submitButton = document.getElementById('submit-button');
+            const departamentoIdInput = document.getElementById('id_departamento');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const buttonText = document.getElementById('button-text');
+
+            let isRedirecting = false;
+
+            // --- 0. LEITURA E VALIDAÇÃO DO ID (Corrigido) ---
+            const urlParams = new URLSearchParams(window.location.search);
+              const idDepartamentoParam =
+                    urlParams.get('id_Departamento') ??
+                    urlParams.get('id_departamento') ??
+                    urlParams.get('idDepartamento');
+
+            // VALIDAÇÃO FORTE: Se o ID não existir, o script para.
+            if (!idDepartamentoParam || isNaN(parseInt(idDepartamentoParam))) {
+                statusDiv.className = 'company-status error';
+                statusDiv.textContent = 'Erro CRÍTICO: ID do Departamento não encontrado na URL. Reinicie o processo.';
+                statusDiv.classList.remove('hidden');
+                submitButton.disabled = true;
+                return;
+            }
+
+            departamentoIdInput.value = idDepartamentoParam;
+
+
+            // --- Lógica de Submissão do Formulário (POST + GET + PUT) ---
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                submitButton.disabled = true;
+                buttonText.textContent = 'A Criar Conta...';
+                loadingSpinner.classList.remove('hidden');
+                statusDiv.classList.add('hidden');
+
+                // CORRIGIDO: Usa classes do Dashboard.css
+                statusDiv.className = 'company-status info'; // Assumindo que tem uma classe 'info' ou 'success'
+                statusDiv.textContent = '1/3: A criar conta de funcionário...';
+                statusDiv.classList.remove('hidden');
+
+                const idDepartamento = parseInt(departamentoIdInput.value);
+
+                // CORRIGIDO: Objeto dataFuncionario agora inclui todos os campos
+                const dataFuncionario = {
+                    nome: document.getElementById('nome').value,
+                    genero: document.getElementById('genero').value,
+                    data_nascimento: document.getElementById('data_nascimento').value || null,
+                    morada: document.getElementById('morada').value,
+                    nif: document.getElementById('nif').value,
+                    email: document.getElementById('email').value,
+                    telefone: document.getElementById('telefone').value || null,
+                    morada: document.getElementById('morada').value || null,
+                    username: document.getElementById('username').value,
+
+                    // CORRIGIDO: Lê o 'password' e envia como 'senha_hash'
+                    password: document.getElementById('senha_hash').value,
+
+                    salario_bruto: 0, // Hardcoded (como no seu script)
+                    ativo: true,
+                    id_departamento: idDepartamento,
+                    id_cargo: CARGO_ADMINISTRADOR_ID
+                };
+
+                try {
+                    // =======================================================
+                    // FASE 1: CRIAR O FUNCIONÁRIO (POST)
+                    // =======================================================
+                    let response = await fetch('/api/Funcionarios', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dataFuncionario)
+                    });
+
+                    if (!response.ok) {
+                        // tenta primeiro ler como texto (funciona para HTML / plain text / JSON)
+                        const text = await response.text().catch(() => "");
+                        let errorMessage = text || `Erro no servidor (${response.status})`;
+
+                        // tenta interpretar como JSON se for JSON
+                        try {
+                            const parsed = JSON.parse(text);
+                            if (parsed.title) errorMessage = parsed.title;
+                            else if (parsed.errors) errorMessage = `Erro de Validação: ${Object.values(parsed.errors).flat().join('; ')}`;
+                            else errorMessage = JSON.stringify(parsed);
+                        } catch (e) {
+                            // não é JSON — mantemos o texto
+                        }
+
+                        console.error("Resposta do servidor (não OK):", response.status, text);
+                        throw new Error(errorMessage);
+                    }
+                    const resultFuncionario = await response.json();
+                    const idNovoFuncionario = resultFuncionario.id_Funcionario;
+
+                    // --- 1.1 Obter o ID da Empresa ---
+                    statusDiv.textContent = '2/3: A obter ID da Empresa para atualização...';
+
+                    // 1. Obter detalhes do Departamento
+                    response = await fetch(`/api/Departamentos/${idDepartamento}`, { method: 'GET' });
+                    if (!response.ok) {
+                        throw new Error('Falha ao obter o ID da Filial a partir do Departamento.');
+                    }
+                    const resultDepartamento = await response.json();
+                    const idFilial = resultDepartamento.id_Filial;
+
+                    // 2. Obter detalhes da Filial
+                    response = await fetch(`/api/Filiais/${idFilial}`, { method: 'GET' });
+                    if (!response.ok) {
+                        throw new Error('Falha ao obter o ID da Empresa a partir da Filial.');
+                    }
+                    const resultFilial = await response.json();
+                    const idEmpresaParaAtualizar = resultFilial.id_Empresa;
+
+                    // =======================================================
+                    // FASE 2: ATUALIZAR A EMPRESA (PUT)
+                    // =======================================================
+                    if (idEmpresaParaAtualizar) {
+                        statusDiv.textContent = '3/3: A definir novo Administrador e Criador da Empresa...';
+
+                        // 3. Obter a Empresa (Para ter todos os campos necessários para o PUT)
+                        response = await fetch(`/api/Empresas/${idEmpresaParaAtualizar}`, { method: 'GET' });
+                        if (!response.ok) {
+                            throw new Error('Falha ao obter detalhes da Empresa para atualização.');
+                        }
+                        const dadosEmpresa = await response.json();
+
+                        // 4. Atualizar o campo id_criado_por
+                        const dadosAtualizados = {
+                            id_Empresa: idEmpresaParaAtualizar,
+                            nome: dadosEmpresa.nome,
+                            nif: dadosEmpresa.nif,
+                            morada: dadosEmpresa.morada,
+                            telefone: dadosEmpresa.telefone,
+                            email: dadosEmpresa.email,
+                            website: dadosEmpresa.website,
+                            data_criacao: dadosEmpresa.data_Criacao, // Cuidado: pode ser data_criacao ou dataCriacao
+                            id_criado_por: idNovoFuncionario
+                        };
+
+                        // 5. Enviar o PUT
+                        response = await fetch(`/api/Empresas/${idEmpresaParaAtualizar}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(dadosAtualizados)
+                        });
+
+                        if (!response.ok && response.status !== 204) {
+                            throw new Error('Falha ao atualizar o criador da Empresa.');
+                        }
+                    }
+
+                    // SUCESSO FINAL
+                    // CORRIGIDO: Usa classes do Dashboard.css
+                    statusDiv.className = 'company-status success';
+                    statusDiv.textContent = `Conta '${resultFuncionario.username}' criada! Sistema pronto. A redirecionar para Login...`;
+                    statusDiv.classList.remove('hidden');
+
+                    isRedirecting = true;
+                    window.location.href = '/Login';
+                    return;
+
+                } catch (error) {
+                    // CORRIGIDO: Usa classes do Dashboard.css
+                    statusDiv.className = 'company-status error';
+                    statusDiv.textContent = error.message.startsWith('Erro') ? error.message : `Erro: ${error.message}`;
+                } finally {
+                    if (!isRedirecting) {
+                        submitButton.disabled = false;
+                        buttonText.textContent = 'Criar Administrador e Finalizar';
+                        loadingSpinner.classList.add('hidden');
+                        statusDiv.classList.remove('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+﻿@page
+@model INFOGEST_Web.Pages.FuncionáriosModel
+@{
+    ViewData["Title"] = "A Minha Equipa";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        .emp-card {
+            background-color: #020617;
+            border: 1px solid #1f2937;
+            border-radius: 16px;
+            width: 100%;
+            min-height: 460px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+            .emp-card:hover {
+                transform: translateY(-5px);
+                border-color: #3b82f6;
+                box-shadow: 0 10px 20px rgba(0,0,0,.4);
+            }
+
+        .emp-card-body {
+            flex-grow: 1;
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e3a8a, #172554);
+            color: #93c5fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+
+        .card-title {
+            color: #e5e7eb;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .card-subtitle {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .info-list {
+            background-color: rgba(255,255,255,.03);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 110px;
+        }
+
+            .info-list li {
+                color: #d1d5db;
+                font-size: .9rem;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+            }
+
+            .info-list i {
+                color: #3b82f6;
+                margin-right: 10px;
+            }
+
+        .btn-card-action {
+            background-color: transparent;
+            border: 1px solid #374151;
+            color: #9ca3af;
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all .2s;
+        }
+
+            .btn-card-action:hover {
+                background-color: #3b82f6;
+                border-color: #3b82f6;
+                color: white;
+            }
+
+        .loading-container {
+            text-align: center;
+            padding: 50px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Gestão de Recursos Humanos / Supervisor</span>
+            </div>
+            <div class="dash-right">
+                <a href="/PainelControlo" class="btn-top ghost">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width:1100px">
+
+            <section class="dash-intro mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="bi bi-people me-2 text-primary"></i>Minha Equipa</h2>
+                        <p style="color:#9ca3af">Listagem de colaboradores do seu departamento.</p>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-25 text-primary px-3 py-2">
+                        <i class="bi bi-person-fill"></i>
+                        <span id="countValue">0</span> Colaboradores
+                    </span>
+                </div>
+            </section>
+
+            <div id="grid-funcionarios" class="row g-4">
+                <div class="loading-container w-100">
+                    <div class="spinner-border text-primary mb-3"></div>
+                    <p>A carregar equipa...</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL FICHA -->
+    <div class="modal fade" id="modalFicha" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-light border border-secondary">
+
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-lines-fill me-2"></i>Ficha do Funcionário
+                    </h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="modalConteudo"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', carregarEquipa);
+
+        async function carregarEquipa() {
+            const container = document.getElementById('grid-funcionarios');
+            const counter = document.getElementById('countValue');
+
+            try {
+                const response = await fetch('/api/Funcionarios/equipa');
+                if (!response.ok) throw new Error();
+
+                const lista = await response.json();
+                counter.textContent = lista.length;
+
+                container.innerHTML = '';
+                container.classList.remove('justify-content-center');
+
+                if (lista.length < 3) {
+                    container.classList.add('justify-content-center');
+                }
+
+                lista.forEach(f => {
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="col-md-4 col-sm-6 d-flex">
+                            <div class="emp-card p-4 text-center">
+
+                                <div class="emp-card-body">
+                                    <div class="avatar-circle">
+                                        ${getInitials(f.nome)}
+                                    </div>
+
+                                    <h5 class="card-title">${f.nome}</h5>
+                                    <p class="card-subtitle mb-3">${f.cargo}</p>
+
+                                    <ul class="list-unstyled info-list text-start">
+                                        <li>
+                                            <i class="bi bi-envelope"></i>
+                                            <span class="text-truncate d-inline-block w-100" title="${f.email}">
+                                                ${f.email || 'Sem email'}
+                                            </span>
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-telephone"></i>
+                                            ${f.telefone || 'Sem contacto'}
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-building"></i>
+                                            ${f.departamento}
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <button class="btn-card-action"
+                                            onclick="abrirFicha(${f.id})">
+                                        <i class="bi bi-person-lines-fill me-2"></i> Ver Ficha
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    `);
+                });
+
+            } catch {
+                container.innerHTML =
+                    `<div class="text-danger text-center py-5">Erro ao carregar equipa.</div>`;
+            }
+        }
+
+        function getInitials(nome) {
+            if (!nome) return '?';
+            const p = nome.split(' ');
+            return p.length === 1
+                ? p[0][0].toUpperCase()
+                : (p[0][0] + p[p.length - 1][0]).toUpperCase();
+        }
+
+        async function abrirFicha(id) {
+            const modal = new bootstrap.Modal(document.getElementById('modalFicha'));
+            const conteudo = document.getElementById('modalConteudo');
+
+            conteudo.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    A carregar ficha...
+                </div>
+            `;
+
+            modal.show();
+
+            try {
+                const response = await fetch('/api/Funcionarios/' + id);
+                if (!response.ok) throw new Error();
+
+                const f = await response.json();
+
+                conteudo.innerHTML = `
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>Nome:</strong><br>${f.nome}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Cargo:</strong><br>${f.cargo.nome}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Email:</strong><br>${f.email || '—'}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Telefone:</strong><br>${f.telefone || '—'}
+                        </div>
+                        <div class="col-12">
+                            <strong>Departamento:</strong><br>${f.departamento.nome}
+                        </div>
+                    </div>
+                `;
+            } catch {
+                conteudo.innerHTML = `
+                    <div class="text-danger text-center py-4">
+                        Erro ao carregar ficha.
+                    </div>
+                `;
+            }
+        }
+    </script>
+
+</body>
+</html>

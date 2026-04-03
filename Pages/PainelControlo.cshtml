@@ -1,0 +1,211 @@
+﻿@page "/PainelControlo"
+@model INFOGEST_Web.Pages.PainelControloModel
+@{
+    ViewData["Title"] = "Dashboard Supervisor";
+    Layout = null; // Layout nulo para usarmos o nosso CSS e estrutura completos
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        /* Estilos Específicos para os Cartões de Supervisão */
+        .supervisor-card {
+            background-color: #020617;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #1f2937;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none; /* Remove sublinhado dos links */
+        }
+
+            .supervisor-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                border-color: #374151;
+            }
+
+        /* Cores das Bordas Laterais e Ícones */
+        .border-left-danger {
+            border-left: 4px solid #ef4444;
+        }
+
+        .border-left-success {
+            border-left: 4px solid #22c55e;
+        }
+
+        .border-left-primary {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .bg-danger-soft {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .bg-success-soft {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .bg-primary-soft {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 8px;
+        }
+
+        .card-text {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 0;
+        }
+
+        /* Badge dentro do cartão */
+        .card-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        .badge-alert {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-info {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* Grid Layout */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Gestão de Recursos Humanos</span>
+            </div>
+
+            <div class="dash-right" style="display:flex; align-items:center; gap:15px;">
+                <div style="text-align:right;">
+                    <span style="display:block; font-size:14px; font-weight:600; color:#e5e7eb;" id="nomeSupervisor">Supervisor</span>
+                    <span style="display:block; font-size:11px; color:#9ca3af;">Painel de Chefia</span>
+                </div>
+                <div style="width:40px; height:40px; background:#1f2937; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-weight:bold; border:1px solid #374151;">
+                    S
+                </div>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width: 1000px;">
+
+            <section class="dash-intro">
+                <h2>Painel de Controlo</h2>
+                <p>Bem-vindo à sua área de gestão de equipa.</p>
+            </section>
+
+            <div class="cards-grid">
+
+                <a href="/FaltasDepartamento" class="supervisor-card border-left-danger">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div class="icon-box bg-danger-soft">
+                            <i class="bi bi-calendar-x" style="font-size: 24px;"></i>
+                        </div>
+                        <span class="card-badge badge-alert">Ação Necessária</span>
+                    </div>
+                    <h4 class="card-title">Faltas</h4>
+                    <p class="card-text">Gerir justificações pendentes e consultar histórico de ausências da equipa.</p>
+                </a>
+
+                <a href="/FeriasDepartamento" class="supervisor-card border-left-success">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div class="icon-box bg-success-soft">
+                            <i class="bi bi-sun" style="font-size: 24px;"></i>
+                        </div>
+                        <span class="card-badge badge-info">Gestão de Mapas</span>
+                    </div>
+                    <h4 class="card-title">Férias</h4>
+                    <p class="card-text">Aprovação de pedidos de férias e gestão do mapa anual de ausências.</p>
+                </a>
+
+                <a href="/Funcionarios" class="supervisor-card border-left-primary">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div class="icon-box bg-primary-soft">
+                            <i class="bi bi-people" style="font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    <h4 class="card-title">Equipa</h4>
+                    <p class="card-text">Consultar fichas de funcionários, cargos e contactos diretos.</p>
+                </a>
+
+            </div>
+
+            <div style="margin-top: 50px; text-align: center;">
+                <a href="/HomeSupervisores" class="btn-top ghost" style="margin-right:10px;">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Portal Pessoal
+                </a>
+                <a href="/Login" class="btn-top ghost" style="border-color:#ef4444; color:#ef4444;">
+                    <i class="bi bi-box-arrow-right"></i> Terminar Sessão
+                </a>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/Funcionarios/meu-perfil');
+                if(response.ok) {
+                    const dados = await response.json();
+                    document.getElementById('nomeSupervisor').textContent = dados.nome || "Supervisor";
+                }
+            } catch(e) {
+                console.error("Erro ao carregar perfil.");
+            }
+        });
+    </script>
+
+</body>
+</html>

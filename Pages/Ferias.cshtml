@@ -1,0 +1,549 @@
+﻿@page "/Ferias"
+@{
+    ViewData["Title"] = "Gestão de Férias";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - Gestão de Férias</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        /* =========================================
+                   CSS ESPECÍFICO (Complementa Dashboard.css)
+                   ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827, #020617);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .dash-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .dash-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .dash-logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3b82f6;
+            letter-spacing: 0.14em;
+            text-decoration: none;
+        }
+
+        .dash-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+            display: block;
+        }
+
+        .btn-top.ghost {
+            background: transparent;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .dash-main {
+            max-width: 1000px;
+            margin: 0 auto 32px auto;
+            width: 100%;
+        }
+
+        .dash-card {
+            background-color: #020617;
+            border-radius: 14px;
+            padding: 24px;
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        a.nav-link {
+            color: #9ca3af;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+            a.nav-link:hover, a.nav-link.active {
+                color: #3b82f6 !important;
+            }
+
+        /* ESTATÍSTICAS */
+        .stat-card {
+            background-color: #020617;
+            border: 1px solid #1f2937;
+            border-radius: 14px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .text-blue-glow {
+            color: #60a5fa;
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .text-green-glow {
+            color: #34d399;
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* BOTÃO NOVO PEDIDO */
+        .btn-new-request {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed #3b82f6;
+            color: #60a5fa;
+            border-radius: 14px;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+            .btn-new-request:hover {
+                background: rgba(59, 130, 246, 0.2);
+                transform: translateY(-2px);
+                color: #93c5fd;
+            }
+
+        /* TABELA */
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+            .custom-table th, .custom-table td {
+                padding: 16px;
+                text-align: left;
+                border-bottom: 1px solid #1f2937;
+                color: #d1d5db;
+            }
+
+            .custom-table th {
+                color: #6b7280;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+                border-bottom: 2px solid #374151;
+            }
+
+        /* BADGES */
+        .badge-status {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success-dark {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-warning-dark {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-danger-dark {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        .form-dark {
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+        }
+
+            .form-dark:focus {
+                background-color: #111827;
+                color: #fff;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+            }
+
+        /* BOTÃO VOLTAR */
+        .btn-voltar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 16px;
+            border: 1px solid transparent;
+        }
+
+            .btn-voltar:hover {
+                background-color: rgba(59, 130, 246, 0.15);
+                color: #3b82f6;
+                border-color: rgba(59, 130, 246, 0.3);
+            }
+
+        /* TOAST DE ALERTA */
+        #customAlert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            font-size: 0.95rem;
+        }
+
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success-toast {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-left: 5px solid #047857;
+        }
+
+        .alert-danger-toast {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-left: 5px solid #991b1b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <a style="text-decoration: none;">
+                    <div class="dash-logo">INFOGEST</div>
+                    <span class="dash-subtitle">Portal do Colaborador</span>
+                </a>
+            </div>
+            <div class="flex-grow-1 d-flex justify-content-center">
+                <ul class="navbar-nav d-flex flex-row align-items-center list-unstyled mb-0">
+                    <li class="nav-item mx-3 mx-md-4"><a href="/Ferias" class="nav-link active">Férias</a></li>
+                    <li class="nav-item mx-3 mx-md-4"><a href="/CheckinOut" class="nav-link">Check-in/Out</a></li>
+                    <li class="nav-item mx-3 mx-md-4"><a href="/Faltas" class="nav-link">Faltas</a></li>
+                </ul>
+            </div>
+            <div class="dash-right">
+                <a href="/Perfil" class="btn-top ghost"><i class="bi bi-person-circle" style="margin-right: 6px;"></i> Perfil</a>
+            </div>
+        </header>
+
+        <main class="dash-main">
+
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <a href="#" id="btnVoltar" class="btn-voltar" style="display: none;">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+
+                <i class="bi bi-luggage-fill" style="color: #3b82f6; font-size: 24px;"></i>
+                <h2 style="color: #e5e7eb; font-size: 22px; font-weight: 600; margin:0;">Minhas Férias</h2>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h3 id="lblTotal" class="stat-value text-blue-glow">-</h3>
+                        <p class="stat-label">Saldo Total Anual</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h3 id="lblDisponivel" class="stat-value text-green-glow">-</h3>
+                        <p class="stat-label">Disponíveis para marcar</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button onclick="toggleModal()" class="btn btn-new-request">
+                        <i class="bi bi-plus-lg me-2"></i> Novo Pedido
+                    </button>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <h5 class="mb-4" style="color: #e5e7eb; font-weight: 600;">Histórico de Pedidos</h5>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Data Início</th>
+                                <th>Data Fim</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaFerias">
+                            <tr><td colspan="3" class="text-center text-muted p-3">A carregar...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="customAlert" class="alert-success-toast">
+        <i id="alertIcon" class="bi bi-check-circle-fill fs-5"></i>
+        <span id="alertMessage">Operação realizada!</span>
+    </div>
+
+    <div id="modalFerias" class="modal-overlay">
+        <div class="dash-card" style="width: 100%; max-width: 400px;">
+            <h5 style="color: #fff; margin-bottom: 20px;">Marcar Férias</h5>
+
+            <form id="formFerias">
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Data Início</label>
+                    <input type="date" id="dataInicio" class="form-control form-dark" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Data Fim</label>
+                    <input type="date" id="dataFim" class="form-control form-dark" required>
+                </div>
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" onclick="toggleModal()" class="btn btn-sm btn-outline-light">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Submeter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // 1. Carrega os dados das férias
+            loadDadosFerias();
+
+            // 2. Lógica para o BOTÃO VOLTAR dinâmico
+            try {
+                const response = await fetch('/api/Funcionarios/meu-perfil');
+                if (response.ok) {
+                    const perfil = await response.json();
+
+                    const btn = document.getElementById('btnVoltar');
+                    if (btn) {
+                        // Define o destino com base no cargo retornado pela API
+                        btn.href = perfil.urlVoltar || "/HomeTrabalhadores";
+                        btn.style.display = 'flex'; // Torna visível
+                    }
+                } else {
+                    // Se falhar (ex: 401), fallback
+                    const btn = document.getElementById('btnVoltar');
+                    btn.href = "/HomeTrabalhadores";
+                    btn.style.display = 'flex';
+                }
+            } catch (e) {
+                console.error("Erro ao definir link de voltar", e);
+                // Fallback de segurança
+                const btn = document.getElementById('btnVoltar');
+                btn.href = "/HomeTrabalhadores";
+                btn.style.display = 'flex';
+            }
+        });
+
+        function toggleModal() {
+            const modal = document.getElementById('modalFerias');
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        // --- FUNÇÃO PARA MOSTRAR NOTIFICAÇÃO ---
+        function mostrarNotificacao(mensagem, tipo) {
+            const alerta = document.getElementById('customAlert');
+            const texto = document.getElementById('alertMessage');
+            const icone = document.getElementById('alertIcon');
+
+            texto.innerText = mensagem;
+
+            if (tipo === 'success') {
+                alerta.className = 'alert-success-toast';
+                icone.className = 'bi bi-check-circle-fill fs-5';
+            } else {
+                alerta.className = 'alert-danger-toast';
+                icone.className = 'bi bi-exclamation-triangle-fill fs-5';
+            }
+
+            alerta.style.display = 'flex';
+            setTimeout(() => { alerta.style.display = 'none'; }, 4000);
+        }
+
+        // CARREGAR DADOS (GET)
+        async function loadDadosFerias() {
+            try {
+                const response = await fetch('/api/Ferias/resumo');
+                if (response.status === 401) { window.location.href = "/Login"; return; }
+
+                const data = await response.json();
+
+                // Preencher Cartões
+                document.getElementById('lblTotal').innerText = data.diasTotais + " Dias";
+                document.getElementById('lblDisponivel').innerText = data.diasDisponiveis + " Dias";
+
+                // Preencher Tabela
+                const tbody = document.getElementById('tabelaFerias');
+                tbody.innerHTML = '';
+
+                if (data.historico.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted p-3">Sem registo de férias.</td></tr>';
+                    return;
+                }
+
+                data.historico.forEach(f => {
+                    let badgeClass = "badge-warning-dark"; // Pendente
+                    if (f.estado === "Aprovado") badgeClass = "badge-success-dark";
+                    if (f.estado === "Recusado") badgeClass = "badge-danger-dark";
+
+                    const tr = `
+                        <tr>
+                            <td>${f.dataInicio}</td>
+                            <td>${f.dataFim}</td>
+                            <td><span class="badge-status ${badgeClass}">${f.estado}</span></td>
+                        </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', tr);
+                });
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // ENVIAR PEDIDO (POST)
+        document.getElementById('formFerias').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const textoOriginal = btn.innerText;
+
+            btn.disabled = true;
+            btn.innerText = "A enviar...";
+
+            const dados = {
+                dataInicio: document.getElementById('dataInicio').value,
+                dataFim: document.getElementById('dataFim').value
+            };
+
+            try {
+                const response = await fetch('/api/Ferias/pedir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const textoResposta = await response.text();
+                let jsonResposta;
+                try { jsonResposta = JSON.parse(textoResposta); }
+                catch { jsonResposta = { message: textoResposta || "Erro desconhecido." }; }
+
+                if (response.ok) {
+                    mostrarNotificacao("Pedido enviado com sucesso!", "success");
+                    toggleModal();
+                    loadDadosFerias();
+                    e.target.reset();
+                } else {
+                    mostrarNotificacao(jsonResposta.message || "Ocorreu um erro.", "error");
+                }
+            } catch (error) {
+                mostrarNotificacao("Erro de conexão ao servidor.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = textoOriginal;
+            }
+        });
+    </script>
+</body>
+</html>

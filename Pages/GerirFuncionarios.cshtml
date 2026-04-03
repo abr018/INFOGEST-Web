@@ -1,0 +1,621 @@
+﻿@page "/GerirFuncionarios"
+@model INFOGEST_Web.Pages.GerirFuncionariosModel
+@{
+    ViewData["Title"] = "Gestão de Funcionários";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.css">
+
+    <style>
+        /* ... (O teu CSS mantém-se igual) ... */
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .table-container th, .table-container td {
+                text-align: left;
+                padding: 14px 16px;
+                border-bottom: 1px solid #1f2937;
+                color: #d1d5db;
+                font-size: 14px;
+            }
+
+            .table-container th {
+                color: #9ca3af;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+            }
+
+            .table-container tr:last-child td {
+                border-bottom: none;
+            }
+
+            .table-container tr:hover td {
+                background-color: rgba(255, 255, 255, 0.03);
+            }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #d1d5db;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 6px;
+            transition: all 0.2s;
+        }
+
+            .action-btn:hover {
+                background: #1f2937;
+                border-color: #4b5563;
+                color: #fff;
+            }
+
+            .action-btn.delete:hover {
+                border-color: #ef4444;
+                color: #ef4444;
+            }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        @@keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-modal {
+            animation: slideUpFade 0.4s ease-out forwards;
+        }
+
+        .btn-danger-custom {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+            transition: transform 0.2s;
+        }
+
+            .btn-danger-custom:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.1);
+            }
+
+        .btn-warning-custom {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            transition: all 0.2s ease;
+        }
+
+            .btn-warning-custom:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.1);
+            }
+
+        .company-field input, .company-field select, .filter-select {
+            width: 100%;
+            padding: 10px;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #d1d5db;
+            margin-top: 5px;
+            outline: none;
+        }
+
+            .company-field input:focus, .company-field select:focus, .filter-select:focus {
+                border-color: #6366f1;
+            }
+
+        .filters-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: rgba(31, 41, 55, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+            .filter-group label {
+                display: block;
+                font-size: 12px;
+                color: #9ca3af;
+                margin-bottom: 4px;
+            }
+
+        .company-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 10px 0;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .company-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        @@media (max-width: 600px) {
+            .company-form {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Painel de Gestão / Funcionários</span>
+            </div>
+            <div class="dash-right">
+                <a href="/HomeAdmin" class="btn-top ghost">Voltar</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width: 1100px;">
+            <section class="dash-intro" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>@ViewData["Title"]</h2>
+                    <p>Faça a gestão dos colaboradores, cargos e departamentos.</p>
+                </div>
+                <button onclick="openModal()" class="btn-main">
+                    <i class="bi bi-person-plus-fill"></i> Novo Funcionário
+                </button>
+            </section>
+
+            <section class="filters-wrapper">
+                <div class="filter-group">
+                    <label>Filial</label>
+                    <select id="filterFilial" class="filter-select" onchange="onFilialChange()"><option value="">Todas</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>Departamento</label>
+                    <select id="filterDepartamento" class="filter-select" onchange="applyFilters()"><option value="">Todos</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>Cargo</label>
+                    <select id="filterCargo" class="filter-select" onchange="applyFilters()"><option value="">Todos</option></select>
+                </div>
+                <div class="filter-group" style="flex: 0 0 auto; display: flex; align-items: flex-end;">
+                    <button onclick="clearFilters()" class="btn-top ghost" style="height: 42px; margin-top: 5px;"><i class="bi bi-x-lg"></i> Limpar</button>
+                </div>
+            </section>
+
+            <section class="company-card">
+                <table class="table-container">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cargo</th>
+                            <th>Departamento</th>
+                            <th>Filial</th>
+                            <th>Username</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-funcionarios"></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div id="modalCreate" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 500px; padding: 20px;">
+
+            <header class="company-card-header" style="margin-bottom: 15px;">
+                <h2 id="modalTitle" style="font-size: 1.25rem;">Novo Funcionário</h2>
+                <p style="font-size: 0.85rem; margin-top: 4px;">Preencha os dados de acesso e afiliação.</p>
+            </header>
+
+            <form id="form-funcionario" class="company-form" style="gap: 10px;">
+                <input type="hidden" id="funcId">
+
+                <div class="company-field full-width">
+                    <label style="font-size: 0.8rem;">Nome Completo *</label>
+                    <input type="text" id="nome" placeholder="Ex: Ana Freitas" required style="padding: 8px; font-size: 0.9rem;">
+                </div>
+
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Email *</label>
+                    <input type="email" id="email" placeholder="Ex: exemplo@exemplo.com" required style="padding: 8px; font-size: 0.9rem;">
+                </div>
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Telefone</label>
+                    <input type="tel" id="telefone" placeholder="Ex: 960111222" style="padding: 8px; font-size: 0.9rem;">
+                </div>
+
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Data Nascimento</label>
+                    <input type="date" id="dataNascimento" style="padding: 8px; font-size: 0.9rem;">
+                </div>
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Género</label>
+                    <select id="genero" style="padding: 8px; font-size: 0.9rem;">
+                        <option value="">Selecione...</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                    </select>
+                </div>
+
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">NIF</label>
+                    <input type="text" id="nif" placeholder="Ex: 123123123" maxlength="9" style="padding: 8px; font-size: 0.9rem;">
+                </div>
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Salário Bruto (€) *</label>
+                    <input type="number" id="salarioBruto" placeholder="Ex: 1000" required step="0.01" min="0" style="padding: 8px; font-size: 0.9rem;">
+                </div>
+
+                <div class="company-field full-width">
+                    <label style="font-size: 0.8rem;">Morada</label>
+                    <input type="text" id="morada" style="padding: 8px; font-size: 0.9rem;">
+                </div>
+
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Departamento *</label>
+                    <select id="departamentoSelect" required style="padding: 8px; font-size: 0.9rem;"><option value="">A carregar...</option></select>
+                </div>
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Cargo *</label>
+                    <select id="cargoSelect" required style="padding: 8px; font-size: 0.9rem;"><option value="">A carregar...</option></select>
+                </div>
+
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Username *</label>
+                    <input type="text" id="username" required style="padding: 8px; font-size: 0.9rem;">
+                </div>
+                <div class="company-field">
+                    <label style="font-size: 0.8rem;">Password</label>
+                    <input type="password" id="password" placeholder="Ex: 1234567890" style="padding: 8px; font-size: 0.9rem;">
+                </div>
+
+                <div class="company-actions full-width" style="margin-top: 15px;">
+                    <button type="button" onclick="closeModal()" class="btn-top ghost" style="margin-right: 0; border: none; font-size: 0.9rem; padding: 8px 16px;">Cancelar</button>
+                    <button type="submit" class="btn-main company-btn" style="font-size: 0.9rem; padding: 8px 20px;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalDelete" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 400px; margin: 0; text-align: center;">
+            <div style="font-size: 40px; color: #ef4444; margin-bottom: 10px;"><i class="bi bi-person-x-fill"></i></div>
+            <header class="company-card-header"><h2 style="color: #fff;">Inativar Funcionário?</h2><p>O utilizador perderá o acesso ao sistema.</p></header>
+            <div class="company-actions" style="justify-content: center; gap: 15px; margin-top: 20px;">
+                <button type="button" onclick="closeDeleteModal()" class="btn-top ghost" style="border: none;">Cancelar</button>
+                <button type="button" onclick="confirmDelete()" class="btn-danger-custom">Sim, Inativar</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalBlocked" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 420px; margin: 0; text-align: center;">
+            <div style="font-size: 40px; color: #f59e0b; margin-bottom: 10px;"><i class="bi bi-shield-lock-fill"></i></div>
+            <header class="company-card-header"><h2 style="color: #fff;">Ação Bloqueada</h2><p id="msgBlocked">Operação não permitida.</p></header>
+            <div class="company-actions" style="justify-content: center; margin-top: 20px;">
+                <button type="button" onclick="closeBlockedModal()" class="btn-warning-custom">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let idParaApagar = null;
+        let allFuncionarios = [];
+        let allDepartamentosList = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCargosFromDB();
+            loadDepartamentosOptions();
+            loadFiliaisForFilter();
+            loadDepartamentosForFilter();
+            loadFuncionarios();
+            document.getElementById('form-funcionario').addEventListener('submit', salvarFuncionario);
+        });
+
+        // ... (Mantém as funções de Load e Filtros iguais) ...
+        async function loadFuncionarios() {
+            const tbody = document.getElementById('lista-funcionarios');
+            try {
+                const response = await fetch('/api/Funcionarios');
+                if (!response.ok) throw new Error("Erro");
+                allFuncionarios = await response.json();
+                renderTable(allFuncionarios);
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Erro ao carregar.</td></tr>';
+            }
+        }
+        // ... (Outras funções de load mantêm-se) ...
+
+        // --- SALVAR (Com Salário) ---
+        async function salvarFuncionario(event) {
+            event.preventDefault();
+            const id = document.getElementById('funcId').value;
+            const password = document.getElementById('password').value;
+
+            if (!id && (!password || password.trim() === "")) {
+                alert("Password é obrigatória para novos registos.");
+                return;
+            }
+
+            const dados = {
+                id_Funcionario: id ? parseInt(id) : 0,
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                genero: document.getElementById('genero').value,
+                data_Nascimento: document.getElementById('dataNascimento').value || null,
+                morada: document.getElementById('morada').value,
+                salario_Bruto: parseFloat(document.getElementById('salarioBruto').value) || 0,
+                nif: document.getElementById('nif').value,
+                id_Cargo: parseInt(document.getElementById('cargoSelect').value),
+                id_Departamento: parseInt(document.getElementById('departamentoSelect').value),
+                username: document.getElementById('username').value,
+                password: password,
+
+                // NOVO CAMPO NO JSON
+                salario_Bruto: parseFloat(document.getElementById('salarioBruto').value) || 0,
+
+                ativo: true
+            };
+
+            const metodo = id ? 'PUT' : 'POST';
+            const url = id ? `/api/Funcionarios/${id}` : '/api/Funcionarios';
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+                if (response.ok) { closeModal(); loadFuncionarios(); }
+                else {
+                    const t = await response.text();
+                    try { alert("Erro: " + (JSON.parse(t).error || t)); } catch { alert("Erro: " + t); }
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // --- EDITAR (Preencher Salário) ---
+        async function openEditModal(id) {
+            try {
+                const response = await fetch(`/api/Funcionarios/${id}`);
+                if (!response.ok) throw new Error("Erro ao obter dados");
+                const f = await response.json();
+
+                document.getElementById('funcId').value = f.id_Funcionario || f.idFuncionario || "";
+                document.getElementById('nome').value = f.nome || f.Nome || "";
+                document.getElementById('email').value = f.email || f.Email || "";
+                document.getElementById('telefone').value = f.telefone || f.Telefone || "";
+                document.getElementById('nif').value = f.nif || f.Nif || "";
+                document.getElementById('morada').value = f.morada || f.Morada || "";
+                document.getElementById('genero').value = f.genero || f.Genero || "";
+
+                // DATA
+                const rawDate = f.data_Nascimento || f.Data_Nascimento;
+                document.getElementById('dataNascimento').value = rawDate ? rawDate.split('T')[0] : "";
+
+                // SALÁRIO
+                document.getElementById('salarioBruto').value = f.salario_Bruto || f.salarioBruto || 0;
+
+                // SELECTS
+                const idCargo = f.id_Cargo || f.idCargo;
+                if(idCargo) document.getElementById('cargoSelect').value = idCargo;
+
+                const idDept = f.id_Departamento || f.idDepartamento;
+                if(idDept) document.getElementById('departamentoSelect').value = idDept;
+
+                document.getElementById('username').value = f.username || f.Username || "";
+                document.getElementById('password').value = "";
+
+                document.getElementById('modalTitle').innerText = "Editar Funcionário";
+                document.getElementById('modalCreate').classList.add('show');
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao abrir edição.");
+            }
+        }
+
+        // ... (Funções de Modais, Filtros e RenderTable mantêm-se iguais) ...
+        // Vou incluir as essenciais para funcionar se copiares tudo:
+
+        function openModal() {
+            document.getElementById('form-funcionario').reset();
+            document.getElementById('funcId').value = "";
+            document.getElementById('modalTitle').innerText = "Novo Funcionário";
+            document.getElementById('modalCreate').classList.add('show');
+        }
+        function closeModal() { document.getElementById('modalCreate').classList.remove('show'); }
+        function openDeleteModal(id) { idParaApagar = id; document.getElementById('modalDelete').classList.add('show'); }
+        function closeDeleteModal() { idParaApagar = null; document.getElementById('modalDelete').classList.remove('show'); }
+        function openBlockedModal(msg) { if(msg) document.getElementById('msgBlocked').innerText = msg; document.getElementById('modalBlocked').classList.add('show'); }
+        function closeBlockedModal() { document.getElementById('modalBlocked').classList.remove('show'); }
+
+        async function confirmDelete() {
+            if (!idParaApagar) return;
+            try {
+                const response = await fetch(`/api/Funcionarios/${idParaApagar}`, { method: 'DELETE' });
+                if (response.ok) { closeDeleteModal(); loadFuncionarios(); }
+                else if (response.status === 409) { closeDeleteModal(); openBlockedModal("Não é possível apagar."); }
+                else { closeDeleteModal(); alert("Erro técnico."); }
+            } catch (e) { closeDeleteModal(); }
+        }
+
+        // Funções auxiliares de Filtros (Necessárias)
+        async function loadFiliaisForFilter() {
+             try {
+                const response = await fetch('/api/Filiais');
+                if (!response.ok) return;
+                const filiais = await response.json();
+                const select = document.getElementById('filterFilial');
+                select.innerHTML = '<option value="">Todas</option>';
+                filiais.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.nome; opt.textContent = f.nome;
+                    select.appendChild(opt);
+                });
+            } catch (e) {}
+        }
+        async function loadDepartamentosForFilter() {
+            try {
+                const response = await fetch('/api/Departamentos');
+                if (!response.ok) return;
+                allDepartamentosList = await response.json();
+                updateDepartmentFilter();
+            } catch (e) {}
+        }
+        async function loadCargosFromDB() {
+             try {
+                const response = await fetch('/api/Cargos');
+                if (!response.ok) return;
+                const cargos = await response.json();
+                const selectModal = document.getElementById('cargoSelect');
+                selectModal.innerHTML = '<option value="">Selecione...</option>';
+                const selectFilter = document.getElementById('filterCargo');
+                selectFilter.innerHTML = '<option value="">Todos</option>';
+                cargos.forEach(c => {
+                    let opt = document.createElement('option');
+                    opt.value = c.id_Cargo || c.idCargo; opt.textContent = c.nome;
+                    selectModal.appendChild(opt);
+                    opt = document.createElement('option');
+                    opt.value = c.nome; opt.textContent = c.nome;
+                    selectFilter.appendChild(opt);
+                });
+            } catch (e) {}
+        }
+        async function loadDepartamentosOptions() {
+            const select = document.getElementById('departamentoSelect');
+            try {
+                const response = await fetch('/api/Departamentos');
+                if(!response.ok) throw new Error();
+                const depts = await response.json();
+                select.innerHTML = '<option value="">Selecione...</option>';
+                depts.forEach(d => {
+                    const id = d.id_Departamento || d.idDepartamento;
+                    const nomeFilial = (d.filial) ? d.filial.nome : (d.nomeFilial || '?');
+                    const option = document.createElement('option');
+                    option.value = id; option.textContent = `${d.nome} (${nomeFilial})`;
+                    select.appendChild(option);
+                });
+            } catch (e) {}
+        }
+        function onFilialChange() { updateDepartmentFilter(); applyFilters(); }
+        function updateDepartmentFilter() {
+            const selectedFilialName = document.getElementById('filterFilial').value;
+            const deptSelect = document.getElementById('filterDepartamento');
+            deptSelect.innerHTML = '<option value="">Todos</option>';
+            allDepartamentosList.forEach(d => {
+                const branchName = (d.filial) ? d.filial.nome : (d.nomeFilial || "");
+                if (selectedFilialName === "" || branchName === selectedFilialName) {
+                    const opt = document.createElement('option');
+                    opt.value = d.nome; opt.textContent = d.nome;
+                    deptSelect.appendChild(opt);
+                }
+            });
+        }
+        function applyFilters() {
+            const fFilial = document.getElementById('filterFilial').value;
+            const fDept = document.getElementById('filterDepartamento').value;
+            const fCargo = document.getElementById('filterCargo').value;
+            const filtered = allFuncionarios.filter(item => {
+                const matchFilial = fFilial === "" || item.nomeFilial === fFilial;
+                const matchDept = fDept === "" || item.nomeDepartamento === fDept;
+                const matchCargo = fCargo === "" || item.nomeCargo === fCargo;
+                return matchFilial && matchDept && matchCargo;
+            });
+            renderTable(filtered);
+        }
+        function clearFilters() {
+            document.getElementById('filterFilial').value = "";
+            document.getElementById('filterCargo').value = "";
+            updateDepartmentFilter();
+            applyFilters();
+        }
+        function renderTable(data) {
+            const tbody = document.getElementById('lista-funcionarios');
+            tbody.innerHTML = '';
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Nenhum funcionário encontrado.</td></tr>'; return; }
+            data.forEach(item => {
+                const id = item.id_Funcionario;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: #fff; font-weight: 500;"><i class="bi bi-person-circle" style="margin-right:8px; opacity:0.7;"></i> ${item.nome}</td>
+                    <td style="color: #d1d5db;">${item.nomeCargo || "N/A"}</td>
+                    <td style="color: #9ca3af;">${item.nomeDepartamento || "-"}</td>
+                    <td style="color: #9ca3af;">${item.nomeFilial || "-"}</td>
+                    <td>${item.username}</td>
+                    <td style="text-align: right;">
+                        <button class="action-btn" onclick="openEditModal(${id})"><i class="bi bi-pencil"></i></button>
+                        <button class="action-btn delete" onclick="openDeleteModal(${id})"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

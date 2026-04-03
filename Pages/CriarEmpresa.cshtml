@@ -1,0 +1,186 @@
+﻿@page "/CriarEmpresa"
+@model INFOGEST_Web.Pages.CriarEmpresaModel
+@{
+    ViewData["Title"] = "Registar Nova Empresa";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>InfoGest - Registar Nova Empresa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Mantém o estilo do dashboard -->
+    <link rel="stylesheet" href="/css/Dashboard.css">
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <!-- TOPO -->
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Registar Nova Empresa</span>
+            </div>
+
+            <div class="dash-right">
+                <a href="/Dashboard" class="btn-top ghost">Voltar ao painel</a>
+            </div>
+        </header>
+
+        <!-- CONTEÚDO -->
+        <main class="dash-main">
+
+            <section class="company-card">
+
+                <header class="company-card-header">
+                    <h2>Registar Nova Empresa</h2>
+                    <p>Insira os dados da Empresa.</p>
+                </header>
+
+                <!-- Mensagem de estado -->
+                <div id="status-message" class="hidden"></div>
+
+                <!-- FORMULÁRIO (FUNÇÃO + ESTILO DO DASHBOARD) -->
+                <form id="empresa-form" class="company-form">
+
+                    <!-- Nome -->
+                    <div class="company-field">
+                        <label for="nome">Nome da Empresa *</label>
+                        <input type="text" id="nome" maxlength="100" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="company-field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" maxlength="100" placeholder="exemplo@empresa.com">
+                    </div>
+
+                    <!-- NIF -->
+                    <div class="company-field">
+                        <label for="nif">NIF *</label>
+                        <input type="text" id="nif" maxlength="9" required placeholder="9 dígitos">
+                    </div>
+
+                    <!-- Website -->
+                    <div class="company-field">
+                        <label for="website">Website</label>
+                        <input type="url" id="website" maxlength="100" placeholder="https://">
+                    </div>
+
+                    <!-- Morada -->
+                    <div class="company-field full-width">
+                        <label for="morada">Morada</label>
+                        <input type="text" id="morada" maxlength="200">
+                    </div>
+
+                    <!-- Telefone -->
+                    <div class="company-field">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" maxlength="20" placeholder="Contacto telefónico">
+                    </div>
+
+                    <!-- BOTÃO -->
+                    <div class="company-actions">
+                        <button type="submit" id="submit-button" class="btn-main company-btn">
+                            <span id="button-text">Continuar</span>
+                            <span id="loading-spinner" class="hidden"></span>
+                        </button>
+                    </div>
+
+                </form>
+
+                <footer class="company-footer">
+                    <p>© 2025 - INFOGEST</p>
+                </footer>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const statusDiv = document.getElementById('status-message');
+            const form = document.getElementById('empresa-form');
+            const submitButton = document.getElementById('submit-button');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const buttonText = document.getElementById('button-text');
+
+            let isRedirecting = false;
+
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                submitButton.disabled = true;
+                buttonText.textContent = 'A Registar...';
+                loadingSpinner.classList.remove('hidden');
+                statusDiv.classList.add('hidden');
+
+                const data = {
+                    nome: document.getElementById('nome').value,
+                    nif: document.getElementById('nif').value,
+                    morada: document.getElementById('morada').value || null,
+                    telefone: document.getElementById('telefone').value || null,
+                    email: document.getElementById('email').value || null,
+                    website: document.getElementById('website').value || null,
+                    id_criado_por: null
+                };
+
+                try {
+
+                    const response = await fetch('/api/Empresas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+
+                        statusDiv.className = "success";
+                        statusDiv.textContent = "Empresa criada. A redirecionar...";
+                        statusDiv.classList.remove("hidden");
+
+                        isRedirecting = true;
+                        window.location.href = `/CriarFilial?id_empresa=${result.id_Empresa}`;
+                        return;
+
+                    } else {
+                        const errorResult = await response.json().catch(() => ({
+                            title: `Erro ${response.status}`
+                        }));
+
+                        let message = errorResult.title;
+
+                        if (errorResult.errors) {
+                            message = Object.values(errorResult.errors)
+                                .flat()
+                                .join("; ");
+                        }
+
+                        statusDiv.className = "error";
+                        statusDiv.textContent = message;
+                    }
+
+                } catch (e) {
+                    statusDiv.className = "error";
+                    statusDiv.textContent = "Erro de rede.";
+                }
+
+                submitButton.disabled = false;
+                buttonText.textContent = "Continuar";
+                loadingSpinner.classList.add("hidden");
+                statusDiv.classList.remove("hidden");
+
+            });
+        });
+    </script>
+
+</body>
+</html>

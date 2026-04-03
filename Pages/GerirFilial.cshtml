@@ -1,0 +1,224 @@
+﻿@page
+@model INFOGEST_Web.Pages.GerirFilialModel
+@{
+    ViewData["Title"] = "Gestão de Filiais";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* Ajustes Específicos para Tabelas (Tema Escuro) */
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .table-container th, .table-container td {
+                text-align: left;
+                padding: 14px 16px;
+                border-bottom: 1px solid #1f2937; /* Linha subtil */
+                color: #d1d5db;
+                font-size: 14px;
+            }
+
+            .table-container th {
+                color: #9ca3af;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+            }
+
+            .table-container tr:last-child td {
+                border-bottom: none;
+            }
+
+            .table-container tr:hover td {
+                background-color: rgba(255, 255, 255, 0.03); /* Efeito hover suave */
+            }
+
+        /* Botões de Ação na Tabela */
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #d1d5db;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 6px;
+            transition: all 0.2s;
+        }
+
+            .action-btn:hover {
+                background: #1f2937;
+                border-color: #4b5563;
+                color: #fff;
+            }
+
+            .action-btn.delete:hover {
+                border-color: #ef4444;
+                color: #ef4444;
+            }
+
+        /* Modal (Personalizado para o Tema Escuro) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none; /* Escondido por defeito */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Painel de Gestão / Filiais</span>
+            </div>
+            <div class="dash-right">
+                <a href="/Dashboard" class="btn-top ghost">Voltar</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width: 900px;">
+            <section class="dash-intro" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>@ViewData["Title"]</h2>
+                    <p>Consulte e gerencie as filiais da sua empresa.</p>
+                </div>
+                <button onclick="openModal()" class="btn-main">
+                    <i class="bi bi-plus-lg"></i> Nova Filial
+                </button>
+            </section>
+
+            <section class="company-card">
+                <table class="table-container">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Morada</th>
+                            <th>Telefone</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-filiais">
+                        <tr>
+                            <td>Carregando dados...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+
+    </div>
+
+    <div id="modalCreate" class="modal-overlay">
+        <div class="company-card" style="width: 100%; max-width: 500px; margin: 0;">
+
+            <header class="company-card-header">
+                <h2>Nova Filial</h2>
+                <p>Preencha os dados para adicionar uma nova localização.</p>
+            </header>
+
+            <form id="form-criar-filial" class="company-form" style="grid-template-columns: 1fr;">
+
+                <div class="company-field">
+                    <label>Nome da Filial *</label>
+                    <input type="text" id="nome" required placeholder="Ex: Sede Lisboa">
+                </div>
+
+                <div class="company-field">
+                    <label>Telefone</label>
+                    <input type="tel" id="telefone" placeholder="+351 ...">
+                </div>
+
+                <div class="company-field">
+                    <label>Morada</label>
+                    <input type="text" id="morada" placeholder="Rua, Cidade...">
+                </div>
+
+                <div class="company-actions" style="margin-top: 10px;">
+                    <button type="button" onclick="closeModal()" class="btn-top ghost" style="margin-right: 10px; border: none;">Cancelar</button>
+                    <button type="submit" class="btn-main company-btn">Guardar</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Lógica do Modal ---
+        function openModal() {
+            document.getElementById('modalCreate').classList.add('show');
+        }
+        function closeModal() {
+            document.getElementById('modalCreate').classList.remove('show');
+        }
+
+        // --- Lógica de Dados (API) ---
+        document.addEventListener('DOMContentLoaded', loadFiliais);
+
+        async function loadFiliais() {
+            const tbody = document.getElementById('lista-filiais');
+            try {
+                // 1. Usa a API existente que conta apenas as tuas filiais
+                // Mas aqui precisamos dos DADOS, não da contagem.
+                // Terás de garantir que o endpoint /api/Filiais filtra por empresa no backend (como fizemos antes)
+                const response = await fetch('/api/Filiais');
+
+                if (!response.ok) throw new Error("Erro ao carregar");
+
+                const filiais = await response.json();
+                tbody.innerHTML = ''; // Limpa loading
+
+                filiais.forEach(f => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color: #fff; font-weight: 500;">${f.nome}</td>
+                        <td>${f.morada || '-'}</td>
+                        <td>${f.telefone || '-'}</td>
+                        <td style="text-align: right;">
+                            <button class="action-btn"><i class="bi bi-pencil"></i></button>
+                            <button class="action-btn delete"><i class="bi bi-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar dados.</td></tr>';
+                console.error(error);
+            }
+        }
+    </script>
+
+</body>
+</html>

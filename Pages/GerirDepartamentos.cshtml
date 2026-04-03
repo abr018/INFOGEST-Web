@@ -1,0 +1,451 @@
+﻿@page "/GerirDepartamentos"
+@model INFOGEST_Web.Pages.GerirDepartamentosModel
+@{
+    ViewData["Title"] = "Gestão de Departamentos";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.css">
+
+    <style>
+        /* --- ESTILOS GERAIS (Mantidos do Design Original) --- */
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .table-container th, .table-container td {
+                text-align: left;
+                padding: 14px 16px;
+                border-bottom: 1px solid #1f2937;
+                color: #d1d5db;
+                font-size: 14px;
+            }
+
+            .table-container th {
+                color: #9ca3af;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+            }
+
+            .table-container tr:last-child td {
+                border-bottom: none;
+            }
+
+            .table-container tr:hover td {
+                background-color: rgba(255, 255, 255, 0.03);
+            }
+
+        /* Botões da Tabela */
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #d1d5db;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 6px;
+            transition: all 0.2s;
+        }
+
+            .action-btn:hover {
+                background: #1f2937;
+                border-color: #4b5563;
+                color: #fff;
+            }
+
+            .action-btn.delete:hover {
+                border-color: #ef4444;
+                color: #ef4444;
+            }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        /* Animação */
+        @@keyframes slideUpFade {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .animate-modal {
+            animation: slideUpFade 0.4s ease-out forwards;
+        }
+
+        /* Botão Apagar (Vermelho) */
+        .btn-danger-custom {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+            transition: transform 0.2s;
+        }
+
+            .btn-danger-custom:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.1);
+            }
+
+        /* Botão Aviso (Laranja) */
+        .btn-warning-custom {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            transition: all 0.2s ease;
+        }
+
+            .btn-warning-custom:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.1);
+            }
+
+        /* --- ESTILO EXTRA PARA O SELECT (DROPDOWN) --- */
+        /* Para garantir que o select fica igual aos inputs no tema escuro */
+        select.dash-input {
+            width: 100%;
+            padding: 10px;
+            background-color: #1f2937; /* Cor de fundo escura */
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #d1d5db;
+            outline: none;
+            margin-top: 5px;
+        }
+
+            select.dash-input:focus {
+                border-color: #6366f1; /* Cor de destaque (indigo) */
+            }
+
+        /* Ajuste para inputs normais caso não estejam no CSS global */
+        .company-field input {
+            width: 100%;
+            padding: 10px;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #d1d5db;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Painel de Gestão / Departamentos</span>
+            </div>
+            <div class="dash-right">
+                <a href="/HomeAdmin" class="btn-top ghost">Voltar</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width: 900px;">
+            <section class="dash-intro" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>@ViewData["Title"]</h2>
+                    <p>Consulte e gerencie os departamentos e suas filiais.</p>
+                </div>
+                <button onclick="openModal()" class="btn-main">
+                    <i class="bi bi-plus-lg"></i> Novo Departamento
+                </button>
+            </section>
+
+            <section class="company-card">
+                <table class="table-container">
+                    <thead>
+                        <tr>
+                            <th>Departamento</th>
+                            <th>Filial Pertencente</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-departamentos">
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div id="modalCreate" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 500px; margin: 0;">
+            <header class="company-card-header">
+                <h2 id="modalTitle">Novo Departamento</h2>
+                <p>Associe um nome e uma filial.</p>
+            </header>
+            <form id="form-criar-departamento" class="company-form" style="grid-template-columns: 1fr;">
+
+                <input type="hidden" id="deptId">
+
+                <div class="company-field">
+                    <label>Nome do Departamento *</label>
+                    <input type="text" id="nome" required placeholder="Ex: Recursos Humanos">
+                </div>
+
+                <div class="company-field">
+                    <label>Filial *</label>
+                    <select id="filialSelect" class="dash-input" required>
+                        <option value="">A carregar filiais...</option>
+                    </select>
+                </div>
+
+                <div class="company-actions" style="margin-top: 20px;">
+                    <button type="button" onclick="closeModal()" class="btn-top ghost" style="margin-right: 10px; border: none;">Cancelar</button>
+                    <button type="submit" class="btn-main company-btn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalDelete" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 400px; margin: 0; text-align: center;">
+
+            <div style="font-size: 40px; color: #ef4444; margin-bottom: 10px;">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+
+            <header class="company-card-header">
+                <h2 style="color: #fff;">Tem a certeza?</h2>
+                <p>Esta ação apagará o departamento. Funcionários associados poderão ficar sem departamento.</p>
+            </header>
+
+            <div class="company-actions" style="justify-content: center; gap: 15px; margin-top: 20px;">
+                <button type="button" onclick="closeDeleteModal()" class="btn-top ghost" style="border: none;">Cancelar</button>
+                <button type="button" onclick="confirmDelete()" class="btn-danger-custom">Sim, Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalBlocked" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 420px; margin: 0; text-align: center;">
+            <div style="font-size: 40px; color: #f59e0b; margin-bottom: 10px;">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <header class="company-card-header">
+                <h2 style="color: #fff;">Ação Bloqueada</h2>
+                <p>Não é possível apagar: existem <strong>funcionários ativos</strong> dependentes deste departamento.</p>
+            </header>
+            <div class="company-actions" style="justify-content: center; margin-top: 20px;">
+                <button type="button" onclick="closeBlockedModal()" class="btn-warning-custom">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let idParaApagar = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDepartamentos();
+            loadFiliaisOptions(); // Carrega o dropdown
+            document.getElementById('form-criar-departamento').addEventListener('submit', salvarDepartamento);
+        });
+
+        // --- CARREGAR DROPDOWN DE FILIAIS ---
+        async function loadFiliaisOptions() {
+            const select = document.getElementById('filialSelect');
+            try {
+                const response = await fetch('/api/Filiais');
+                if(!response.ok) throw new Error("Erro filiais");
+                const filiais = await response.json();
+
+                select.innerHTML = '<option value="">Selecione uma filial...</option>';
+                filiais.forEach(f => {
+                    const id = f.id_Filial || f.idFilial;
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = f.nome;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                select.innerHTML = '<option value="">Erro ao carregar filiais</option>';
+            }
+        }
+
+        // --- CRUD DEPARTAMENTOS ---
+        async function salvarDepartamento(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('deptId').value;
+            const nome = document.getElementById('nome').value;
+            const idFilial = document.getElementById('filialSelect').value;
+
+            const dados = {
+                id_Departamento: id ? parseInt(id) : 0,
+                nome: nome,
+                id_Filial: parseInt(idFilial)
+            };
+
+            const metodo = id ? 'PUT' : 'POST';
+            const url = id ? `/api/Departamentos/${id}` : '/api/Departamentos';
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    loadDepartamentos();
+                } else {
+                    alert("Erro ao guardar. Verifique os dados.");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        }
+
+        async function loadDepartamentos() {
+            const tbody = document.getElementById('lista-departamentos');
+            try {
+                const response = await fetch('/api/Departamentos');
+                if (!response.ok) throw new Error("Erro ao carregar");
+                const departamentos = await response.json();
+
+                tbody.innerHTML = '';
+
+                departamentos.forEach(d => {
+                    const id = d.id_Departamento || d.idDepartamento;
+                    // Lógica segura para pegar o nome da filial (caso venha aninhado ou achatado)
+                    const nomeFilial = d.nomeFilial || (d.filial ? d.filial.nome : 'Sem Filial');
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color: #fff; font-weight: 500;">${d.nome}</td>
+                        <td style="color: #9ca3af;">${nomeFilial}</td>
+                        <td style="text-align: right;">
+                            <button class="action-btn" onclick="openEditModal(${id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="openDeleteModal(${id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="3">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        // --- MODAIS ---
+        function openModal() {
+            document.getElementById('form-criar-departamento').reset();
+            document.getElementById('deptId').value = "";
+            document.getElementById('modalTitle').innerText = "Novo Departamento";
+            document.getElementById('modalCreate').classList.add('show');
+        }
+
+        async function openEditModal(id) {
+            try {
+                const response = await fetch(`/api/Departamentos/${id}`);
+                if (!response.ok) throw new Error("Erro");
+                const d = await response.json();
+
+                document.getElementById('deptId').value = d.id_Departamento || d.idDepartamento;
+                document.getElementById('nome').value = d.nome;
+
+                // Selecionar a filial correta no dropdown
+                const idFilial = d.id_Filial || d.idFilial;
+                document.getElementById('filialSelect').value = idFilial;
+
+                document.getElementById('modalTitle').innerText = "Editar Departamento";
+                document.getElementById('modalCreate').classList.add('show');
+
+            } catch (error) {
+                alert("Não foi possível carregar os dados.");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalCreate').classList.remove('show');
+        }
+
+        // --- APAGAR ---
+        function openDeleteModal(id) {
+            idParaApagar = id;
+            document.getElementById('modalDelete').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            idParaApagar = null;
+            document.getElementById('modalDelete').classList.remove('show');
+        }
+
+        function openBlockedModal() { document.getElementById('modalBlocked').classList.add('show'); }
+        function closeBlockedModal() { document.getElementById('modalBlocked').classList.remove('show'); }
+
+        async function confirmDelete() {
+            if (!idParaApagar) return;
+            try {
+                const response = await fetch(`/api/Departamentos/${idParaApagar}`, { method: 'DELETE' });
+                if (response.ok) {
+                    closeDeleteModal();
+                    loadDepartamentos();
+                } else if (response.status === 409) {
+                    closeDeleteModal();
+                    openBlockedModal();
+                } else {
+                    alert("Erro técnico ao apagar.");
+                    closeDeleteModal();
+                }
+            } catch (error) {
+                alert("Erro de conexão.");
+                closeDeleteModal();
+            }
+        }
+    </script>
+
+</body>
+</html>

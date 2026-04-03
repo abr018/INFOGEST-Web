@@ -1,0 +1,517 @@
+﻿@page "/GerirFiliais"
+@model INFOGEST_Web.Pages.GerirFiliaisModel
+@{
+    ViewData["Title"] = "Gestão de Filiais";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.css">
+
+    <style>
+        /* Ajustes Específicos para Tabelas (Tema Escuro) */
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .table-container th, .table-container td {
+                text-align: left;
+                padding: 14px 16px;
+                border-bottom: 1px solid #1f2937; /* Linha subtil */
+                color: #d1d5db;
+                font-size: 14px;
+            }
+
+            .table-container th {
+                color: #9ca3af;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+            }
+
+            .table-container tr:last-child td {
+                border-bottom: none;
+            }
+
+            .table-container tr:hover td {
+                background-color: rgba(255, 255, 255, 0.03); /* Efeito hover suave */
+            }
+
+        /* Botões de Ação na Tabela */
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #d1d5db;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 6px;
+            transition: all 0.2s;
+        }
+
+            .action-btn:hover {
+                background: #1f2937;
+                border-color: #4b5563;
+                color: #fff;
+            }
+
+            .action-btn.delete:hover {
+                border-color: #ef4444;
+                color: #ef4444;
+            }
+
+        /* Modal (Personalizado para o Tema Escuro) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none; /* Escondido por defeito */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        /* --- ESTILOS GERAIS (Mantidos) --- */
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+            .table-container th, .table-container td {
+                text-align: left;
+                padding: 14px 16px;
+                border-bottom: 1px solid #1f2937;
+                color: #d1d5db;
+                font-size: 14px;
+            }
+
+            .table-container th {
+                color: #9ca3af;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+            }
+
+            .table-container tr:last-child td {
+                border-bottom: none;
+            }
+
+            .table-container tr:hover td {
+                background-color: rgba(255, 255, 255, 0.03);
+            }
+
+        /* Botões da Tabela */
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #d1d5db;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 6px;
+            transition: all 0.2s;
+        }
+
+            .action-btn:hover {
+                background: #1f2937;
+                border-color: #4b5563;
+                color: #fff;
+            }
+
+            .action-btn.delete:hover {
+                border-color: #ef4444;
+                color: #ef4444;
+            }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+        /* Animação */
+        @@keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-modal {
+            animation: slideUpFade 0.4s ease-out forwards;
+        }
+
+        /* --- NOVO: Estilo para o botão de Apagar (Vermelho) --- */
+        .btn-danger-custom {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+            transition: transform 0.2s;
+        }
+
+            .btn-danger-custom:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.1);
+            }
+
+        /* Botão Laranja (Aviso / Bloqueio) */
+        .btn-warning-custom {
+            /* Gradiente Laranja para combinar com o ícone */
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 999px; /* Formato Pílula */
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); /* Sombra Laranja */
+            transition: all 0.2s ease;
+        }
+
+            .btn-warning-custom:hover {
+                transform: translateY(-2px); /* Sobe ligeiramente */
+                box-shadow: 0 6px 15px rgba(245, 158, 11, 0.5); /* Sombra mais forte */
+                filter: brightness(1.1); /* Fica mais claro */
+            }
+
+            .btn-warning-custom:active {
+                transform: translateY(0);
+            }
+
+        /* NOTA OS DOIS ARROBAS AQUI EM BAIXO */
+        @@keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px); /* Começa mais abaixo */
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0); /* Sobe para a posição original */
+            }
+        }
+
+        .animate-modal {
+            /* Executa a animação em 0.4 segundos */
+            animation: slideUpFade 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Painel de Gestão / Filiais</span>
+            </div>
+            <div class="dash-right">
+                <a href="/HomeAdmin" class="btn-top ghost">Voltar</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width: 900px;">
+            <section class="dash-intro" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>@ViewData["Title"]</h2>
+                    <p>Consulte e gerencie as filiais da sua empresa.</p>
+                </div>
+                <button onclick="openModal()" class="btn-main">
+                    <i class="bi bi-plus-lg"></i> Nova Filial
+                </button>
+            </section>
+
+            <section class="company-card">
+                <table class="table-container">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Morada</th>
+                            <th>Telefone</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-filiais">
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div id="modalCreate" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 500px; margin: 0;">
+            <header class="company-card-header">
+                <h2 id="modalTitle">Nova Filial</h2>
+                <p>Preencha os dados abaixo.</p>
+            </header>
+            <form id="form-criar-filial" class="company-form" style="grid-template-columns: 1fr;">
+
+                <input type="hidden" id="filialId">
+
+                <div class="company-field">
+                    <label>Nome da Filial *</label>
+                    <input type="text" id="nome" required placeholder="Ex: Sede Lisboa">
+                </div>
+                <div class="company-field">
+                    <label>Telefone</label>
+                    <input type="tel" id="telefone" placeholder="+351 ...">
+                </div>
+                <div class="company-field">
+                    <label>Morada</label>
+                    <input type="text" id="morada" placeholder="Rua, Cidade...">
+                </div>
+                <div class="company-actions" style="margin-top: 10px;">
+                    <button type="button" onclick="closeModal()" class="btn-top ghost" style="margin-right: 10px; border: none;">Cancelar</button>
+                    <button type="submit" class="btn-main company-btn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalDelete" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 400px; margin: 0; text-align: center;">
+
+            <div style="font-size: 40px; color: #ef4444; margin-bottom: 10px;">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+
+            <header class="company-card-header">
+                <h2 style="color: #fff;">Tem a certeza?</h2>
+                <p>Esta ação apagará a filial e <strong>todos os seus departamentos</strong>. Não pode ser revertida.</p>
+            </header>
+
+            <div class="company-actions" style="justify-content: center; gap: 15px; margin-top: 20px;">
+                <button type="button" onclick="closeDeleteModal()" class="btn-top ghost" style="border: none;">Cancelar</button>
+                <button type="button" onclick="confirmDelete()" class="btn-danger-custom">Sim, Apagar</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalBlocked" class="modal-overlay">
+        <div class="company-card animate-modal" style="width: 100%; max-width: 420px; margin: 0; text-align: center;">
+            <div style="font-size: 40px; color: #f59e0b; margin-bottom: 10px;">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <header class="company-card-header">
+                <h2 style="color: #fff;">Ação Bloqueada</h2>
+                <p>Não é possível apagar: existem <strong>funcionários ativos</strong> nesta filial.</p>
+            </header>
+            <div class="company-actions" style="justify-content: center; margin-top: 20px;">
+                <button type="button" onclick="closeBlockedModal()" class="btn-warning-custom">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- VARIÁVEL PARA GUARDAR O ID A APAGAR ---
+        let idParaApagar = null;
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFiliais();
+            document.getElementById('form-criar-filial').addEventListener('submit', salvarFilial);
+        });
+
+        // --- LÓGICA DE SALVAR (CRIAR ou EDITAR) ---
+        async function salvarFilial(event) {
+            event.preventDefault();
+
+            // 1. Capturar dados
+            const id = document.getElementById('filialId').value; // Vê se tem ID escondido
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+            const morada = document.getElementById('morada').value;
+
+            const dadosFilial = {
+                id_Filial: id ? parseInt(id) : 0, // Se for edição, manda o ID
+                nome: nome,
+                telefone: telefone,
+                morada: morada
+            };
+
+            // 2. Decidir se é POST (Novo) ou PUT (Editar)
+            const metodo = id ? 'PUT' : 'POST';
+            const url = id ? `/api/Filiais/${id}` : '/api/Filiais';
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dadosFilial)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    loadFiliais(); // Atualiza a tabela
+                } else {
+                    alert("Erro ao guardar. Verifique os dados.");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Erro de conexão.");
+            }
+        }
+
+        // --- ABRIR MODAL PARA CRIAR (Limpa tudo) ---
+        function openModal() {
+            // Limpa o formulário e o ID escondido
+            document.getElementById('form-criar-filial').reset();
+            document.getElementById('filialId').value = "";
+
+            // Muda o título para "Nova"
+            document.getElementById('modalTitle').innerText = "Nova Filial";
+
+            document.getElementById('modalCreate').classList.add('show');
+        }
+
+        // --- ABRIR MODAL PARA EDITAR (Preenche dados) ---
+        async function openEditModal(id) {
+            try {
+                // 1. Busca os dados atuais da filial na API
+                const response = await fetch(`/api/Filiais/${id}`);
+                if (!response.ok) throw new Error("Erro ao buscar dados");
+                const f = await response.json();
+
+                // 2. Preenche os campos do formulário
+                document.getElementById('filialId').value = f.id_Filial || f.idFilial;
+                document.getElementById('nome').value = f.nome;
+                document.getElementById('telefone').value = f.telefone || "";
+                document.getElementById('morada').value = f.morada || "";
+
+                // 3. Muda o título para "Editar"
+                document.getElementById('modalTitle').innerText = "Editar Filial";
+
+                // 4. Mostra o modal
+                document.getElementById('modalCreate').classList.add('show');
+
+            } catch (error) {
+                console.error(error);
+                alert("Não foi possível carregar os dados para edição.");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalCreate').classList.remove('show');
+        }
+
+        // --- LÓGICA DE APAGAR ---
+        function openDeleteModal(id) {
+            idParaApagar = id;
+            document.getElementById('modalDelete').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            idParaApagar = null;
+            document.getElementById('modalDelete').classList.remove('show');
+        }
+
+        function openBlockedModal() {
+            document.getElementById('modalBlocked').classList.add('show');
+        }
+
+        function closeBlockedModal() {
+            document.getElementById('modalBlocked').classList.remove('show');
+        }
+
+        async function confirmDelete() {
+            if (!idParaApagar) return;
+
+            try {
+                const response = await fetch(`/api/Filiais/${idParaApagar}`, { method: 'DELETE' });
+
+                if (response.ok) {
+                    closeDeleteModal();
+                    loadFiliais();
+                } else if (response.status === 409) {
+                    closeDeleteModal();
+                    openBlockedModal();
+                } else {
+                    alert("Erro técnico ao apagar.");
+                    closeDeleteModal();
+                }
+            } catch (error) {
+                alert("Erro de conexão.");
+                closeDeleteModal();
+            }
+        }
+
+        // --- CARREGAR TABELA ---
+        async function loadFiliais() {
+            const tbody = document.getElementById('lista-filiais');
+            try {
+                const response = await fetch('/api/Filiais');
+                if (!response.ok) throw new Error("Erro ao carregar");
+                const filiais = await response.json();
+
+                tbody.innerHTML = '';
+
+                filiais.forEach(f => {
+                    const id = f.id_Filial || f.idFilial;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color: #fff; font-weight: 500;">${f.nome}</td>
+                        <td>${f.morada || '-'}</td>
+                        <td>${f.telefone || '-'}</td>
+                        <td style="text-align: right;">
+                            <button class="action-btn" onclick="openEditModal(${id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="openDeleteModal(${id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar dados.</td></tr>';
+            }
+        }
+    </script>
+
+</body>
+</html>

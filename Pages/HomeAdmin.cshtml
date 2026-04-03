@@ -1,0 +1,336 @@
+﻿@page "/HomeAdmin"
+@model INFOGEST_Web.Pages.HomeAdminModel
+@{
+    ViewData["Title"] = "Gestão da Empresa";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css ">
+
+    <script src="/js/chart.js"></script>
+
+    <style>
+        /* Estilos para os Gráficos (Mantido) */
+        .charts-section {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .chart-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            color: #fff;
+        }
+
+        .chart-wide {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .chart-narrow {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-container-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        /* NOVO: Estilos para a Secção de Acesso Rápido */
+        .dash-quick-actions {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsivo */
+            gap: 20px;
+        }
+
+        .action-btn-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+            .action-btn-card:hover {
+                background-color: rgba(59, 130, 246, 0.15); /* Azul suave ao passar o rato */
+                border-color: #3b82f6;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .action-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .action-info span {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Painel de Gestão</span>
+            </div>
+            <div class="dash-right">
+                <a href="/Login" class="btn-top ghost" style="margin-right: 12px;">Terminar sessão</a>
+                <a href="/Perfil" class="btn-top ghost">
+                    <i class="bi bi-person-circle" style="margin-right: 6px;"></i> Perfil
+                </a>
+            </div>
+        </header>
+
+        <main class="dash-main">
+
+            <section class="dash-intro">
+                <h2>Resumo da atividade</h2>
+                <p>Visão geral dos principais indicadores e métricas financeiras.</p>
+            </section>
+
+            <section class="dash-summary">
+                <div class="summary-cards">
+                    <article class="dash-card">
+                        <h3>Nº de Filiais</h3>
+                        <p class="number" id="total-filiais">-</p>
+                    </article>
+                    <article class="dash-card">
+                        <h3>Nº de Departamentos</h3>
+                        <p class="number" id="total-departamentos">-</p>
+                    </article>
+                    <article class="dash-card">
+                        <h3>Nº de Funcionários</h3>
+                        <p class="number" id="total-funcionarios">-</p>
+                    </article>
+                    <article class="dash-card">
+                        <h3>Gasto Total</h3>
+                        <p class="number" id="total-gastos">-</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="dash-quick-actions">
+
+                <a href="/GerirFiliais" class="action-btn-card">
+                    <div class="action-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div class="action-info">
+                        <h4>Gerir Filiais</h4>
+                        <span>Ver e criar localizações</span>
+                    </div>
+                </a>
+
+                <a href="/GerirDepartamentos" class="action-btn-card">
+                    <div class="action-icon">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <div class="action-info">
+                        <h4>Departamentos</h4>
+                        <span>Organizar equipas</span>
+                    </div>
+                </a>
+
+                <a href="/GerirFuncionarios" class="action-btn-card">
+                    <div class="action-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="action-info">
+                        <h4>Funcionários</h4>
+                        <span>Listar e gerir RH</span>
+                    </div>
+                </a>
+
+            </section>
+
+            <section class="charts-section">
+                <div class="chart-card chart-wide">
+                    <h3>Distribuição de RH por Filial</h3>
+                    <div class="chart-container-wrapper">
+                        <canvas id="chartFuncionarios"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card chart-narrow">
+                    <h3>Custos por Filial (Mensal)</h3>
+                    <div class="chart-container-wrapper">
+                        <canvas id="chartCustos"></canvas>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            Chart.defaults.color = '#cbd5e1';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+            carregarTotaisCards();
+            carregarGraficos();
+        });
+
+        async function carregarTotaisCards() {
+            try {
+                const resFiliais = await fetch('/api/DadosEmpresa/total-filiais');
+                if(resFiliais.ok) {
+                    const total = await resFiliais.json();
+                    document.getElementById('total-filiais').textContent = total;
+                }
+                const resDept = await fetch('/api/DadosEmpresa/total-departamentos');
+                if(resDept.ok) {
+                    const total = await resDept.json();
+                    document.getElementById('total-departamentos').textContent = total;
+                }
+                const resFunc = await fetch('/api/DadosEmpresa/total-funcionarios');
+                if(resFunc.ok) {
+                    const total = await resFunc.json();
+                    document.getElementById('total-funcionarios').textContent = total;
+                }
+                const resGast = await fetch('/api/DadosEmpresa/total-gastos');
+                if(resGast.ok) {
+                    const total = await resGast.json();
+                    document.getElementById('total-gastos').textContent = total;
+                }
+            } catch (e) { console.error("Erro ao carregar totais:", e); }
+        }
+
+        async function carregarGraficos() {
+            const coresBase = [
+                '#3b82f6', // Blue (Já tens)
+                '#10b981', // Emerald (Já tens)
+                '#f59e0b', // Amber (Já tens)
+                '#ef4444', // Red (Já tens)
+                '#8b5cf6', // Violet (Já tens)
+                '#ec4899', // Pink (Já tens)
+                // --- NOVAS ---
+                '#06b6d4', // Cyan-500 (Azul esverdeado vibrante)
+                '#84cc16', // Lime-500 (Verde lima)
+                '#f97316', // Orange-500 (Laranja puro)
+                '#d946ef', // Fuchsia-500 (Rosa choque/Roxo)
+                '#6366f1', // Indigo-500 (Entre azul e roxo)
+                '#14b8a6'  // Teal-500 (Verde azulado)
+            ];
+
+            // Gráfico Barras
+            try {
+                const response = await fetch('/api/DadosEmpresa/funcionarios-por-filial');
+                if (response.ok) {
+                    const dadosAPI = await response.json();
+                    const labels = dadosAPI.map(item => item.label);
+                    const valores = dadosAPI.map(item => item.value);
+                    const ctx = document.getElementById('chartFuncionarios').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Funcionários',
+                                data: valores,
+                                backgroundColor: coresBase,
+                                borderRadius: 4,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            } catch (error) { console.error("Erro gráfico barras:", error); }
+
+            // Gráfico Donut
+            try {
+                const response = await fetch('/api/DadosEmpresa/custos-por-filial');
+                if (response.ok) {
+                    const dadosAPI = await response.json();
+                    const labels = dadosAPI.map(item => item.label);
+                    const valores = dadosAPI.map(item => item.value);
+                    const ctx = document.getElementById('chartCustos').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: valores,
+                                backgroundColor: coresBase,
+                                hoverOffset: 4,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: { position: 'right', labels: { boxWidth: 12, padding: 15, font: { size: 11 } } },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) { label += ': '; }
+                                            if (context.parsed !== null) {
+                                                label += new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(context.parsed);
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) { console.error("Erro gráfico donut:", error); }
+        }
+    </script>
+
+</body>
+</html>

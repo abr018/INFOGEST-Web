@@ -1,0 +1,186 @@
+﻿@page "/CriarFilial"
+@model INFOGEST_Web.Pages.CriarFilialModel
+@{
+    ViewData["Title"] = "Registar Nova Filial";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>InfoGest - Registar Nova Filial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/Dashboard.css">
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Registar Nova Filial</span>
+            </div>
+
+            <div class="dash-right">
+                <a href="/Dashboard" class="btn-top ghost">Voltar ao painel</a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="align-content: center; width: 600px">
+
+            <section class="company-card">
+
+                <header class="company-card-header">
+                    <h2>Registar Nova Filial</h2>
+                    <p>Insira os dados da Filial.</p>
+                </header>
+
+                <div id="status-message" class="hidden company-status"></div>
+                <div id="empresa-loading-status" class="hidden company-status"></div>
+
+                <form id="filial-form" class="company-form">
+
+                    <input type="hidden" id="id_empresa">
+
+                    <div class="company-field" style="width: 325px">
+                        <label for="nome">Nome da Filial *</label>
+                        <input type="text" id="nome" maxlength="100" required>
+                    </div>
+
+                    <div class="company-field"></div>
+
+                    <div class="company-field full-width">
+                        <label for="morada">Morada</label>
+                        <input type="text" id="morada" maxlength="200">
+                    </div>
+
+                    <div class="company-field" style="width: 325px">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" maxlength="20">
+                    </div>
+
+                    <div class="company-actions">
+                        <button type="submit" id="submit-button" class="btn-main company-btn">
+                            <span id="button-text">Continuar</span>
+                            <span id="loading-spinner" class="spinner hidden"></span>
+                        </button>
+                    </div>
+
+                </form>
+
+                <footer class="company-footer">
+                    <p>© 2025 - INFOGEST</p>
+                </footer>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const token = localStorage.getItem('jwt_token');
+            const statusDiv = document.getElementById('status-message');
+            const form = document.getElementById('filial-form');
+            const empresaIdInput = document.getElementById('id_empresa');
+            const submitButton = document.getElementById('submit-button');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const buttonText = document.getElementById('button-text');
+            // Nota: 'empresa-loading-status' agora existe no HTML
+            const loadingStatus = document.getElementById('empresa-loading-status');
+
+            // --- Ler ID da Empresa da URL ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const idEmpresaParam = urlParams.get('id_empresa');
+
+            if (!idEmpresaParam) {
+                // Usar a 'statusDiv' principal para o erro, já que 'loadingStatus' é para info
+                statusDiv.className = 'company-status error';
+                statusDiv.textContent = 'Erro: ID da Empresa não encontrado na URL.';
+                statusDiv.classList.remove('hidden');
+                submitButton.disabled = true;
+                return;
+            }
+
+            empresaIdInput.value = parseInt(idEmpresaParam);
+            // Esta linha é opcional, pode remover se não quiser mostrar o ID
+            // loadingStatus.textContent = `ID Empresa: ${empresaIdInput.value}`;
+            // loadingStatus.classList.remove('hidden');
+
+            // --- Submissão do Formulário ---
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                submitButton.disabled = true;
+                buttonText.textContent = 'A Registar...';
+                loadingSpinner.classList.remove('hidden');
+                statusDiv.classList.add('hidden');
+
+                const data = {
+                    nome: document.getElementById('nome').value,
+                    morada: document.getElementById('morada').value || null,
+                    telefone: document.getElementById('telefone').value || null,
+                    id_empresa: parseInt(empresaIdInput.value)
+                };
+
+                try {
+                    const response = await fetch('/api/Filiais/sede', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 'Authorization': token ? 'Bearer ' + token : undefined
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+
+                        statusDiv.className = 'company-status success';
+                        statusDiv.textContent = `Filial criada. A redirecionar para Departamento...`;
+                        statusDiv.classList.remove('hidden');
+
+                        window.location.href = `/CriarDepartamento?id_filial=${result.id_Filial}`;
+                        return;
+                    }
+
+                    // ERROS
+                    const errorResult = await response.json().catch(() => ({})); // Evita erro se a resposta de erro não for JSON
+                    let errorMessage = errorResult.title || `Erro ${response.status}: ${response.statusText}`;
+
+                    if (errorResult.errors) {
+                        const validationError = Object.values(errorResult.errors).flat().join('; ');
+                        errorMessage = `Erro de Validação: ${validationError}`;
+                    } else if (response.status === 401) {
+                        errorMessage = 'Sessão expirada. Faça login novamente.';
+                        localStorage.removeItem('jwt_token');
+                        setTimeout(() => window.location.href = '/Login', 2000);
+                    } else if (response.status === 404) {
+                        errorMessage = 'Erro: A Empresa-Mãe não existe.';
+                    }
+
+                    statusDiv.className = 'company-status error';
+                    statusDiv.textContent = errorMessage;
+
+                } catch (error) {
+                    statusDiv.className = 'company-status error';
+                    statusDiv.textContent = 'Erro de rede: Não foi possível ligar ao servidor.';
+                } finally {
+                    if (!statusDiv.textContent.includes("redirecionar")) {
+                        submitButton.disabled = false;
+                        buttonText.textContent = 'Registar Filial';
+                        loadingSpinner.classList.add('hidden');
+                        statusDiv.classList.remove('hidden');
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

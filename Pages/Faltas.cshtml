@@ -1,0 +1,542 @@
+﻿@page "/Faltas"
+@{
+    ViewData["Title"] = "Faltas e Ausências";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - Faltas e Ausências</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        /* =========================================
+                   ESTILOS GERAIS
+                   ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827, #020617);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .dash-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .dash-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .dash-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .dash-logo {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .dash-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .dash-right {
+            display: flex;
+        }
+
+        .btn-top.ghost {
+            background: transparent;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+            .btn-top.ghost:hover {
+                background: #111827;
+                box-shadow: 0 6px 18px rgba(15, 23, 42, 0.7);
+                transform: translateY(-1px);
+            }
+
+        .dash-main {
+            max-width: 1000px;
+            margin: 0 auto 32px auto;
+            width: 100%;
+        }
+
+        .dash-card {
+            background-color: #020617;
+            border-radius: 14px;
+            padding: 24px;
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Menu Links */
+        a.nav-link {
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin: 0 15px;
+            color: #9ca3af; /* Default color added */
+        }
+
+            a.nav-link:hover, a.nav-link.active {
+                color: #3b82f6 !important;
+            }
+
+        /* Alerta Info (Topo da tabela) */
+        .alert-dark-custom {
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        /* Botão Principal */
+        .btn-custom-primary {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+            .btn-custom-primary:hover {
+                background-color: #2563eb;
+            }
+
+        /* Tabela */
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+            .custom-table th, .custom-table td {
+                padding: 16px;
+                text-align: left;
+                border-bottom: 1px solid #1f2937;
+                color: #d1d5db;
+            }
+
+            .custom-table th {
+                color: #6b7280;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+                border-bottom: 2px solid #374151;
+            }
+
+        /* Badges */
+        .badge-status {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-aprovado {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-rejeitado {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .badge-pendente {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .file-link {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+            .file-link:hover {
+                text-decoration: underline;
+                color: #93c5fd;
+            }
+
+        /* Botão Voltar */
+        .btn-voltar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 16px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+            .btn-voltar:hover {
+                background-color: rgba(59, 130, 246, 0.15);
+                color: #3b82f6;
+                border-color: rgba(59, 130, 246, 0.3);
+            }
+
+        /* Inputs Escuros */
+        .form-dark {
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+        }
+
+            .form-dark:focus {
+                background-color: #111827;
+                color: #fff;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+                outline: none;
+            }
+
+        /* =========================================
+                   ALERTA MODERNO (TOAST)
+                   ========================================= */
+        #customAlert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            align-items: center;
+            gap: 10px;
+            min-width: 300px;
+        }
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success-toast {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-left: 5px solid #047857;
+        }
+
+        .alert-danger-toast {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-left: 5px solid #991b1b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <a style="text-decoration: none;">
+                    <h1 class="dash-logo">INFOGEST</h1>
+                    <span class="dash-subtitle">Portal do Colaborador</span>
+                </a>
+            </div>
+
+            <div class="flex-grow-1 d-flex justify-content-center">
+                <ul class="navbar-nav d-flex flex-row align-items-center list-unstyled mb-0">
+                    <li class="nav-item mx-3 mx-md-4"><a href="/Ferias" class="nav-link text-decoration-none" style="color: #9ca3af;">Férias</a></li>
+                    <li class="nav-item mx-3 mx-md-4"><a href="/CheckinOut" class="nav-link text-decoration-none" style="color: #9ca3af;">Check-in/Out</a></li>
+                    <li class="nav-item mx-3 mx-md-4"><a href="/Faltas" class="nav-link text-decoration-none active" style="color: #3b82f6; font-weight: 600;">Faltas</a></li>
+                </ul>
+            </div>
+
+            <div class="dash-right">
+                <a href="/Perfil" class="btn-top ghost"><i class="bi bi-person-circle" style="margin-right: 6px;"></i> Perfil</a>
+            </div>
+        </header>
+
+        <main class="dash-main">
+
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <a href="#" id="btnVoltar" class="btn-voltar" title="Voltar ao Início" style="display: none;">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+
+                <i class="bi bi-file-medical" style="color: #3b82f6; font-size: 24px;"></i>
+                <h2 style="color: #e5e7eb; font-size: 22px; font-weight: 600; margin:0;">Registo de Faltas</h2>
+            </div>
+
+            <div class="alert alert-dark-custom d-flex align-items-center mb-4" role="alert">
+                <i class="bi bi-info-circle-fill me-2" style="font-size: 1.2rem;"></i>
+                <div>As justificações devem ser entregues até <strong>48h</strong> após a ausência.</div>
+            </div>
+
+            <div class="dash-card">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="m-0" style="color: #e5e7eb; font-weight: 600;">Histórico de Ausências</h5>
+                    <button class="btn-custom-primary" onclick="toggleFormulario()">
+                        <i class="bi bi-plus-lg me-1"></i> Justificar Falta
+                    </button>
+                </div>
+
+                <div id="secNovaAusencia" class="mb-4 p-4" style="display: none; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px dashed #374151;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 style="color:#e5e7eb; font-size:16px; margin:0; font-weight:600;">
+                            <i class="bi bi-pencil-square me-2 text-primary"></i>Nova Justificação
+                        </h6>
+                        <button type="button" class="btn btn-sm text-secondary" onclick="toggleFormulario()"><i class="bi bi-x-lg"></i></button>
+                    </div>
+
+                    <form id="formFaltas">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="color:#9ca3af; font-size:13px;">Tipo de Ausência</label>
+                                <select id="inputTipo" class="form-control form-dark" required>
+                                    <option value="Baixa Medica">Baixa Médica</option>
+                                    <option value="Licenca Paternal">Licença Paternal</option>
+                                    <option value="Luto">Luto</option>
+                                    <option value="Outro">Outros</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="color:#9ca3af; font-size:13px;">Data de Início</label>
+                                <input id="inputDataInicio" type="date" class="form-control form-dark" required />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="color:#9ca3af; font-size:13px;">Data de Fim</label>
+                                <input id="inputDataFim" type="date" class="form-control form-dark" required />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="toggleFormulario()">Cancelar</button>
+                            <button type="submit" class="btn-custom-primary">
+                                <i class="bi bi-save me-1"></i> Submeter Pedido
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Periodo</th>
+                                <th>Motivo</th>
+                                <th>Documento</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaHistorico">
+                            <tr><td colspan="4" class="text-center text-muted p-4">A carregar histórico...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="customAlert" class="alert-success-toast">
+        <i id="alertIcon" class="bi bi-check-circle-fill fs-5"></i>
+        <span id="alertMessage">Operação realizada!</span>
+    </div>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            // 1. Carregar lista de faltas
+            carregarFaltas();
+
+            // 2. Lógica para o BOTÃO VOLTAR dinâmico (Igual à página de Férias)
+            try {
+                const response = await fetch('/api/Funcionarios/meu-perfil');
+                if (response.ok) {
+                    const perfil = await response.json();
+
+                    const btn = document.getElementById('btnVoltar');
+                    if (btn) {
+                        // Define o destino com base no cargo retornado pela API
+                        btn.href = perfil.urlVoltar || "/HomeTrabalhadores";
+                        btn.style.display = 'flex'; // Torna visível
+                    }
+                } else {
+                    // Fallback se falhar
+                    const btn = document.getElementById('btnVoltar');
+                    btn.href = "/HomeTrabalhadores";
+                    btn.style.display = 'flex';
+                }
+            } catch (e) {
+                console.error("Erro ao definir link de voltar", e);
+                // Fallback de segurança
+                const btn = document.getElementById('btnVoltar');
+                btn.href = "/HomeTrabalhadores";
+                btn.style.display = 'flex';
+            }
+
+            // Listener do Formulário
+            document.getElementById('formFaltas').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submeterFalta(e);
+            });
+        });
+
+        function toggleFormulario() {
+            var section = document.getElementById("secNovaAusencia");
+            section.style.display = (section.style.display === "none") ? "block" : "none";
+        }
+
+        // --- NOTIFICAÇÕES BONITAS ---
+        function mostrarNotificacao(mensagem, tipo) {
+            const alerta = document.getElementById('customAlert');
+            const texto = document.getElementById('alertMessage');
+            const icone = document.getElementById('alertIcon');
+
+            texto.innerText = mensagem;
+
+            if (tipo === 'success') {
+                alerta.className = 'alert-success-toast';
+                icone.className = 'bi bi-check-circle-fill fs-5';
+            } else {
+                alerta.className = 'alert-danger-toast';
+                icone.className = 'bi bi-exclamation-triangle-fill fs-5';
+            }
+
+            alerta.style.display = 'flex';
+            setTimeout(() => { alerta.style.display = 'none'; }, 4000);
+        }
+
+        // --- 1. CARREGAR LISTA (GET) ---
+        async function carregarFaltas() {
+            const tbody = document.getElementById("tabelaHistorico");
+            try {
+                const response = await fetch('/api/Faltas/Minhas');
+                if (response.status === 401) { window.location.href = "/Login"; return; }
+                if (!response.ok) throw new Error("Erro ao carregar");
+
+                const faltas = await response.json();
+                tbody.innerHTML = "";
+
+                if (faltas.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">Nenhum registo encontrado.</td></tr>`;
+                    return;
+                }
+
+                faltas.forEach(f => {
+                    const dataFormatada = new Date(f.dataInicio).toLocaleDateString('pt-PT') +
+                                            (f.dataFim ? " até " + new Date(f.dataFim).toLocaleDateString('pt-PT') : "");
+
+                    let badgeClass = "badge-pendente";
+                    let estadoTexto = f.estado || "Pendente";
+
+                    if (estadoTexto === "Aprovado" || estadoTexto === "Justificada") badgeClass = "badge-aprovado";
+                    if (estadoTexto === "Rejeitado" || estadoTexto === "Injustificada") badgeClass = "badge-rejeitado";
+
+                    const row = `
+                        <tr>
+                            <td>${dataFormatada}</td>
+                            <td>${f.tipo}</td>
+                            <td>
+                                ${f.temDocumento ? `<a href="#" class="file-link"><i class="bi bi-paperclip"></i> ver_anexo.pdf</a>` : '<span class="text-muted small">--</span>'}
+                            </td>
+                            <td><span class="badge-status ${badgeClass}">${estadoTexto}</span></td>
+                        </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger p-3">Erro ao carregar histórico.</td></tr>`;
+            }
+        }
+
+        // --- 2. CRIAR FALTA (POST) ---
+        async function submeterFalta(event) {
+            const btn = event.target.querySelector("button[type='submit']");
+            const btnTextoOriginal = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> A enviar...';
+            btn.disabled = true;
+
+            const dados = {
+                Tipo: document.getElementById("inputTipo").value,
+                DataInicio: document.getElementById("inputDataInicio").value,
+                DataFim: document.getElementById("inputDataFim").value
+            };
+
+            try {
+                const response = await fetch('/api/Faltas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const textoResposta = await response.text();
+                let jsonResposta;
+                try { jsonResposta = JSON.parse(textoResposta); }
+                catch { jsonResposta = { message: textoResposta || "Erro desconhecido." }; }
+
+                if (response.ok) {
+                    mostrarNotificacao("Justificação enviada com sucesso!", "success");
+                    document.getElementById("formFaltas").reset();
+                    toggleFormulario();
+                    carregarFaltas();
+                } else {
+                    mostrarNotificacao(jsonResposta.message || "Erro ao registar.", "error");
+                }
+            } catch (error) {
+                mostrarNotificacao("Erro de conexão ao servidor.", "error");
+            } finally {
+                btn.innerHTML = btnTextoOriginal;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

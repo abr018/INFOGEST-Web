@@ -1,0 +1,139 @@
+﻿@page "/Login"
+@model INFOGEST_Web.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - INFOGEST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS original -->
+    <link rel="stylesheet" href="/css/Style.css">
+</head>
+
+<body>
+
+    <!-- WRAPPER (sem tailwind) -->
+    <main class="auth-wrapper">
+
+        <!-- LOGIN CARD -->
+        <section class="login-card">
+
+            <!-- HEADER -->
+            <header class="login-header">
+                <h1 class="logo">INFOGEST</h1>
+                <p class="subtitle">SOFTWARE DE GESTÃO</p>
+            </header>
+
+            <!-- FORM -->
+            <form id="login-form" class="login-form">
+
+                <!-- ERRO -->
+                <div id="error-message" class="error hidden"></div>
+
+                <!-- USERNAME -->
+                <div class="form-group floating">
+                    <input type="text" id="username" name="username" placeholder=" " required>
+                    <label for="username">Utilizador</label>
+                </div>
+
+                <!-- PASSWORD -->
+                <div class="form-group floating">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Palavra-passe</label>
+                </div>
+
+                <!-- EXTRAS -->
+                <div class="form-extra">
+                    <label class="remember">
+                        <input type="checkbox" name="remember">
+                        Lembrar-me
+                    </label>
+
+                    <a href="#" class="forgot-link">Esqueci-me da palavra-passe</a>
+                </div>
+
+                <!-- BUTTON -->
+                <button type="submit" class="btn-login">Entrar</button>
+
+            </form>
+        </section>
+
+    </main>
+
+    <!-- ============================ -->
+    <!--   LOGIN SCRIPT (FUNCIONAL)   -->
+    <!-- ============================ -->
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorDiv = document.getElementById('error-message');
+            const btn = document.querySelector('.btn-login');
+
+            // Reset UI
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = "";
+            btn.disabled = true;
+            btn.textContent = "A entrar...";
+
+            // CORREÇÃO: Usar Maiúsculas (PascalCase) para garantir que bate certo com o C#
+            const loginData = {
+                Username: usernameInput.value,
+                Password: passwordInput.value
+            };
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loginData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    // Guardar Token
+                    if(result.token) localStorage.setItem('jwt_token', result.token);
+
+                    // Redirecionar
+                    window.location.href = result.redirectUrl;
+                }
+                else {
+                    const errorResult = await response.json().catch(() => ({}));
+
+                    let errorMessage = errorResult.message || "Dados inválidos.";
+
+                    // CORREÇÃO: Se for erro de validação (esse que apareceu na imagem),
+                    // vamos ler os detalhes para saber o que falhou.
+                    if (errorResult.errors) {
+                        // Junta todos os erros numa frase (ex: "Password vazia")
+                        errorMessage = Object.values(errorResult.errors).flat().join('; ');
+                    }
+                    else if (errorResult.title) {
+                        errorMessage = errorResult.title;
+                    }
+
+                    errorDiv.textContent = errorMessage;
+                    errorDiv.classList.remove('hidden');
+                }
+
+            } catch (err) {
+                errorDiv.textContent = "Erro de conexão ao servidor.";
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+            }
+        });
+    </script>
+
+</body>
+</html>

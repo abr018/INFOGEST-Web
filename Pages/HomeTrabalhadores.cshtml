@@ -1,0 +1,305 @@
+﻿@page "/HomeTrabalhadores"
+@model INFOGEST_Web.Pages.HomeTrabalhadoresModel
+@{
+    ViewData["Title"] = "Portal do Colaborador";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - Portal do Colaborador</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        /* O TEU CSS (Mantido igual) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827, #020617);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .dash-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        /* Ajuste na Topbar para funcionar bem com o Bootstrap */
+        .dash-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .dash-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .dash-logo {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            color: #3b82f6;
+        }
+
+        .dash-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .dash-right {
+            display: flex;
+        }
+
+        .btn-top {
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+            .btn-top.ghost {
+                background: transparent;
+                color: #e5e7eb;
+                border-color: #4b5563;
+            }
+
+                .btn-top.ghost:hover {
+                    background: #111827;
+                    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.7);
+                    transform: translateY(-1px);
+                }
+
+        .dash-main {
+            max-width: 700px;
+            margin: 0 auto 32px auto;
+        }
+
+        .dash-card {
+            background-color: #020617;
+            border-radius: 14px;
+            padding: 16px 18px;
+            border: 1px solid #1f2937;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .w-full-lg {
+            max-width: 1200px !important;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 14px;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+            .custom-table th, .custom-table td {
+                padding: 16px;
+                text-align: center;
+                border: 1px solid #1f2937;
+            }
+
+            .custom-table thead th {
+                background-color: rgba(59, 130, 246, 0.1);
+                color: #3b82f6;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-size: 12px;
+            }
+
+            .custom-table tr:first-child th:first-child {
+                border-top-left-radius: 14px;
+            }
+
+            .custom-table tr:first-child th:last-child {
+                border-top-right-radius: 14px;
+            }
+
+            .custom-table tr:last-child td:first-child {
+                border-bottom-left-radius: 14px;
+            }
+
+            .custom-table tr:last-child td:last-child {
+                border-bottom-right-radius: 14px;
+            }
+
+        .cell-time {
+            background-color: #111827;
+            font-weight: 600;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        .cell-work {
+            color: #60a5fa;
+            transition: background 0.2s;
+        }
+
+            .cell-work:hover {
+                background-color: rgba(59, 130, 246, 0.05);
+            }
+
+        .row-break td {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: #fbbf24;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .schedule-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .schedule-icon {
+            color: #3b82f6;
+            font-size: 24px;
+        }
+
+        .schedule-title {
+            color: #e5e7eb;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .info-footer {
+            margin-top: 16px;
+            text-align: right;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Remove o sublinhado padrão dos links do Bootstrap para não conflituar */
+        a.nav-link:hover {
+            color: #3b82f6 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Portal do Colaborador</span>
+            </div>
+
+            <div class="flex-grow-1 d-flex justify-content-center">
+                <ul class="navbar-nav d-flex flex-row align-items-center list-unstyled mb-0">
+
+                    <li class="nav-item mx-3 mx-md-4">
+                        <a href="/Ferias" class="nav-link text-decoration-none" style="color: #9ca3af; font-size: 1.1rem; font-weight: 500;">
+                            Férias
+                        </a>
+                    </li>
+
+                    <li class="nav-item mx-3 mx-md-4">
+                        <a href="/CheckinOut" class="nav-link text-decoration-none" style="color: #9ca3af; font-size: 1.1rem; font-weight: 500;">
+                            Check-in/Out
+                        </a>
+                    </li>
+
+                    <li class="nav-item mx-3 mx-md-4">
+                        <a href="/Faltas" class="nav-link text-decoration-none" style="color: #9ca3af; font-size: 1.1rem; font-weight: 500;">
+                            Faltas
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="dash-right">
+                <a href="/Login" class="btn-top ghost" style="margin-right: 12px;">Terminar sessão</a>
+            </div>
+            <div class="dash-right">
+                <a href="/Perfil" class="btn-top ghost">
+                    <i class="bi bi-person-circle" style="margin-right: 6px;"></i> Perfil
+                </a>
+            </div>
+        </header>
+
+        <main class="dash-main w-full-lg">
+            <div class="dash-card">
+                <div class="schedule-header">
+                    <i class="bi bi-calendar-week schedule-icon"></i>
+                    <h2 class="schedule-title">Mapa Semanal</h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%">Horas</th>
+                                <th style="width: 18%">Segunda</th>
+                                <th style="width: 18%">Terça</th>
+                                <th style="width: 18%">Quarta</th>
+                                <th style="width: 18%">Quinta</th>
+                                <th style="width: 18%">Sexta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="cell-time">09:00 - 13:00</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                            </tr>
+                            <tr class="row-break">
+                                <td class="cell-time">13:00 - 14:00</td>
+                                <td colspan="5">Pausa para Almoço</td>
+                            </tr>
+                            <tr>
+                                <td class="cell-time">14:00 - 18:00</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                                <td class="cell-work">Trabalho</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-footer">
+                    <i class="bi bi-info-circle me-1"></i> Sábados e Domingos: <span style="color: #ef4444; font-weight: 600;">Encerrado</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

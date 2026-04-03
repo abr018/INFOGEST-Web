@@ -1,0 +1,368 @@
+﻿@page
+@model INFOGEST_Web.Pages.FaltasDepartamentoModel
+@{
+    ViewData["Title"] = "Faltas do Departamento";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>INFOGEST - @ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/Dashboard.css">
+
+    <style>
+        /* =========================================
+                   ESTILOS ESPECÍFICOS DA TABELA (DARK MODE)
+                   ========================================= */
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table-container {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 10px;
+        }
+
+            .table-container th, .table-container td {
+                text-align: left;
+                padding: 16px;
+                border-bottom: 1px solid #1f2937; /* Linha separadora escura */
+                color: #d1d5db; /* Texto cinza claro */
+                font-size: 14px;
+                vertical-align: middle;
+            }
+
+            .table-container th {
+                color: #9ca3af;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 11px;
+                letter-spacing: 0.05em;
+                border-bottom: 2px solid #374151;
+            }
+
+            /* Efeito Hover nas linhas */
+            .table-container tbody tr:hover td {
+                background-color: rgba(255, 255, 255, 0.03); /* Brilho subtil ao passar o rato */
+            }
+
+        /* =========================================
+                   BADGES E BOTÕES
+                   ========================================= */
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        /* Cores dos Badges com transparência moderna */
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* Botões de Ação */
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            background: rgba(17, 24, 39, 0.5);
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+            .action-btn:hover {
+                background: #1f2937;
+                color: #f3f4f6;
+            }
+
+            .action-btn.approve:hover {
+                border-color: #059669;
+                color: #34d399;
+                background: rgba(5, 150, 105, 0.1);
+            }
+
+            .action-btn.reject:hover {
+                border-color: #dc2626;
+                color: #f87171;
+                background: rgba(220, 38, 38, 0.1);
+            }
+
+        .btn-disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: transparent;
+            border: 1px dashed #4b5563;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @@keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Estilo do Select no Dark Mode */
+        .filter-select {
+            background-color: #020617;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            padding: 8px 12px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+            .filter-select:focus {
+                border-color: #3b82f6;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="dash-wrapper">
+
+        <header class="dash-topbar">
+            <div class="dash-left">
+                <h1 class="dash-logo">INFOGEST</h1>
+                <span class="dash-subtitle">Gestão de Recursos Humanos / Supervisor</span>
+            </div>
+            <div class="dash-right">
+                <a href="/PainelControlo" class="btn-top ghost">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </header>
+
+        <main class="dash-main" style="max-width: 1100px;">
+
+            <section class="dash-intro">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2><i class="bi bi-calendar-check text-primary me-2" style="color: #3b82f6;"></i> Controlo de Faltas</h2>
+                        <p>Aprove ou recuse as ausências pendentes da sua equipa.</p>
+                    </div>
+
+                    <div style="min-width: 200px;">
+                        <label style="font-size: 12px; color: #9ca3af; margin-bottom: 4px; display: block;">Filtrar por estado:</label>
+                        <select id="filtroEstado" onchange="carregarFaltas()" class="filter-select" style="width: 100%;">
+                            <option value="Todos">Todos os Estados</option>
+                            <option value="Pendente" selected>Pendentes</option>
+                            <option value="Aprovado">Aprovadas</option>
+                            <option value="Recusado">Recusadas</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="company-card" style="margin-top: 20px;">
+                <div class="table-responsive">
+                    <table class="table-container">
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th>Data</th>
+                                <th>Motivo</th>
+                                <th>Estado Atual</th>
+                                <th style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-faltas-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 20px; text-align: right; color: #6b7280; font-size: 12px;">
+                    <i class="bi bi-info-circle"></i> Apenas supervisores do departamento podem aprovar faltas.
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Variável global para guardar os dados da API
+        let todosDadosFaltas = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarFaltasIniciais();
+        });
+
+        // 1. GET: Vai buscar os dados REAIS à API
+        async function carregarFaltasIniciais() {
+            const tbody = document.getElementById('tabela-faltas-body');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #9ca3af;"><i class="bi bi-arrow-clockwise spinner" style="font-size: 20px;"></i><br><span style="margin-top:10px; display:block">A carregar dados da equipa...</span></td></tr>';
+
+            try {
+                const response = await fetch('/api/FaltasDepartamento');
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert("Sessão expirada. Por favor faça login novamente.");
+                        window.location.href = "/Login";
+                        return;
+                    }
+                    throw new Error("Erro na API");
+                }
+
+                todosDadosFaltas = await response.json();
+                carregarFaltas(); // Renderiza a tabela
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #f87171;"><i class="bi bi-exclamation-triangle"></i> Erro ao carregar dados. Tente atualizar a página.</td></tr>`;
+            }
+        }
+
+        // 2. Renderizar Tabela
+        function carregarFaltas() {
+            const tbody = document.getElementById('tabela-faltas-body');
+            const filtro = document.getElementById('filtroEstado').value;
+
+            tbody.innerHTML = '';
+
+            const dadosFiltrados = filtro === 'Todos'
+                ? todosDadosFaltas
+                : todosDadosFaltas.filter(f => f.estado === filtro);
+
+            if (dadosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: #6b7280;">Nenhum registo encontrado com o estado "${filtro}".</td></tr>`;
+                return;
+            }
+
+            dadosFiltrados.forEach(f => {
+                const tr = document.createElement('tr');
+                tr.id = `linha-falta-${f.id}`;
+
+                // Cores dos badges
+                let badgeClass = 'badge-warning'; // Pendente (Amarelo)
+                let iconClass = 'bi-clock';
+
+                if(f.estado === 'Aprovado' || f.estado === 'Aprovado') {
+                    badgeClass = 'badge-success';
+                    iconClass = 'bi-check-circle';
+                }
+                if(f.estado === 'Recusado' || f.estado === 'Recusado') {
+                    badgeClass = 'badge-danger';
+                    iconClass = 'bi-x-circle';
+                }
+
+                // Botões de Ação
+                let acoesHtml = '';
+                if(f.estado === 'Pendente') {
+                    acoesHtml = `
+                        <button onclick="atualizarFalta(${f.id}, 'Aprovado')" class="action-btn approve" title="Aprovar">
+                            <i class="bi bi-check-lg"></i> Aprovar
+                        </button>
+                        <button onclick="atualizarFalta(${f.id}, 'Recusado')" class="action-btn reject" title="Recusar">
+                            <i class="bi bi-x-lg"></i> Recusar
+                        </button>
+                    `;
+                } else {
+                    acoesHtml = `<button class="action-btn btn-disabled" disabled><i class="bi bi-lock-fill"></i> Processado</button>`;
+                }
+
+                tr.innerHTML = `
+                    <td style="font-weight: 500; color: #f3f4f6;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:32px; height:32px; background:#1f2937; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:12px;">
+                                ${getInitials(f.funcionario)}
+                            </div>
+                            ${f.funcionario}
+                        </div>
+                    </td>
+                    <td>${f.data}</td>
+                    <td style="color: #9ca3af;">${f.motivo}</td>
+                    <td>
+                        <span class="badge ${badgeClass}">
+                            <i class="bi ${iconClass}" style="margin-right:4px;"></i> ${f.estado}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">${acoesHtml}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 3. PUT: Atualiza o estado
+        async function atualizarFalta(id, novoEstado) {
+            const linha = document.getElementById(`linha-falta-${id}`);
+            const originalOpacity = linha.style.opacity;
+            linha.style.opacity = '0.4';
+            linha.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch(`/api/FaltasDepartamento/${id}/estado`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ NovoEstado: novoEstado })
+                });
+
+                if (response.ok) {
+                    const itemIndex = todosDadosFaltas.findIndex(f => f.id === id);
+                    if (itemIndex > -1) {
+                        todosDadosFaltas[itemIndex].estado = novoEstado;
+                    }
+                    carregarFaltas();
+                } else {
+                    const erro = await response.json();
+                    alert("Erro: " + (erro.message || "Não foi possível atualizar."));
+                    linha.style.opacity = originalOpacity;
+                    linha.style.pointerEvents = 'auto';
+                }
+
+            } catch (error) {
+                alert("Erro de comunicação.");
+                linha.style.opacity = originalOpacity;
+                linha.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Helper para iniciais do nome (visual)
+        function getInitials(name) {
+            if(!name) return "?";
+            const parts = name.split(' ');
+            if(parts.length === 1) return parts[0].charAt(0).toUpperCase();
+            return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        }
+    </script>
+</body>
+</html>
